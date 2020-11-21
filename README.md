@@ -1,2 +1,7 @@
 # serverless-aws-bastion
-A secure bastion hosted on AWS Fargate
+
+## Development
+Installing CLI locally
+```bash
+python setup.py develop
+```
