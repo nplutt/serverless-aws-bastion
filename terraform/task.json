@@ -1,0 +1,21 @@
+[
+  {
+    "image": "amazonlinux:2",
+    "name": "amazonlinux2-ssh",
+    "essential": true,
+    "logConfiguration": {
+      "logDriver": "awslogs",
+      "options": {
+        "awslogs-group": "/ecs/ssh-task",
+        "awslogs-region": "us-west-2",
+        "awslogs-stream-prefix": "ecs"
+      }
+    },
+    "environment": [
+      {
+        "name": "AUTHORIZED_SSH_KEYS",
+        "value": ""
+      }
+    ]
+  }
+]

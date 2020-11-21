@@ -17,7 +17,7 @@ setup(
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
     ],
-    long_description=open("README.md").read(),
+    long_description=open("../README.md").read(),
     long_description_content_type="text/markdown",
     python_requires=">=3.6",
     packages=find_packages(exclude=("tests",)),
