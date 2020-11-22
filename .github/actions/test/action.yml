@@ -7,6 +7,9 @@ inputs:
 runs:
   using: 'composite'
   steps:
+  - name: Move to cli directory
+    shell: bash
+    run: cd cli
   - name: Install Dependencies
     shell: bash
     run: |
