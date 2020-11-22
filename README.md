@@ -6,6 +6,14 @@ Installing CLI locally
 python setup.py develop
 ```
 
+## Feature To Do
+- [] Terraform module to create Fargate cluster and task
+- [] CLI to manage booting up Fargate task
+- [] Scripts to allow SSM SSH into Fargate task
+- [] Task timeout functionality
+- [] SSM machine cleanup
+- [] Basic security group to launch the Task into
+- [] Personal vs group bastion functionality
 
 ## Notes
 Hourly pricing:

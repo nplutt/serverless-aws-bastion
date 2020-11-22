@@ -20,4 +20,5 @@ jobs:
     - name: Run tests
       uses: ./.github/actions/test
       with:
+        package-path: cli
         codecov-token: ${{ secrets.CODECOV_TOKEN }}
