@@ -1,9 +1,11 @@
+from typing import Any, Dict
+
 import boto3
 import click
 from botocore.config import Config
 
 
-CLIENT_CACHE = {}
+CLIENT_CACHE: Dict[str, Any] = {}
 
 
 def fetch_boto3_client(service_name: str):
@@ -24,7 +26,7 @@ def fetch_boto3_client(service_name: str):
         signature_version="v4",
         retries={"max_attempts": 10, "mode": "standard"},
     )
-    client = boto3.client(service_name, config=config)
+    client = boto3.client(service_name, config=config)  # type: ignore
 
     CLIENT_CACHE[cache_key] = client
 

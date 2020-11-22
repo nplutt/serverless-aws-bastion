@@ -51,7 +51,7 @@ def launch_bastion(
         authorized_keys=authorized_keys,
     )
 
-    click.secho('Task is running', fg='green')
+    click.secho("Task is running", fg="green")
 
 
 def main() -> None:
