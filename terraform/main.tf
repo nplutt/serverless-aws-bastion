@@ -1,3 +1,26 @@
+resource "aws_iam_policy" "create_logs_policy" {
+  name        = "create-logs"
+  path        = "/"
+  description = "My test policy"
+
+  policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": [
+        "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:PutLogEvents"
+      ],
+      "Effect": "Allow",
+      "Resource": "*"
+    }
+  ]
+}
+EOF
+}
+
 resource "aws_iam_role" "ecs_task_execution_role" {
   name = "serverless-aws-bastion-task-execution-role"
   assume_role_policy = <<EOF
@@ -8,7 +31,10 @@ resource "aws_iam_role" "ecs_task_execution_role" {
       "Sid": "",
       "Effect": "Allow",
       "Principal": {
-        "Service": "ecs-tasks.amazonaws.com"
+        "Service": [
+          "ecs-tasks.amazonaws.com",
+          "ssm.amazonaws.com"
+        ]
       },
       "Action": "sts:AssumeRole"
     }
@@ -25,6 +51,11 @@ resource "aws_iam_role_policy_attachment" "ecs_task_execution" {
 resource "aws_iam_role_policy_attachment" "ssm_managed_instance" {
   role       = aws_iam_role.ecs_task_execution_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+}
+
+resource "aws_iam_role_policy_attachment" "cloudwatch_logs" {
+  role       = aws_iam_role.ecs_task_execution_role.name
+  policy_arn = aws_iam_policy.create_logs_policy.arn
 }
 
 resource "aws_ecs_cluster" "ssh_cluster" {
