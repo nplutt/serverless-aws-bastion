@@ -16,7 +16,12 @@ RUN set -ex && apk add --no-cache sudo ca-certificates && \
     adduser -D ssm-user && echo "ssm-user ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/ssm-agent-users && \
     mkdir -p /etc/amazon/ssm
 
+
 COPY --from=builder /go/src/github.com/amazon-ssm-agent/bin/linux_amd64/ /usr/bin
 COPY --from=builder /go/src/github.com/amazon-ssm-agent/bin/amazon-ssm-agent.json.template /etc/amazon/ssm/amazon-ssm-agent.json
 COPY --from=builder /go/src/github.com/amazon-ssm-agent/bin/seelog_unix.xml /etc/amazon/ssm/seelog.xml
-CMD ["/usr/bin/amazon-ssm-agent"]
+
+ADD boot.sh /
+RUN chmod +x /boot.sh
+
+CMD ["/boot.sh"]

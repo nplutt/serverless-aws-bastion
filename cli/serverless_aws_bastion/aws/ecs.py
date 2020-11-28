@@ -5,8 +5,9 @@ import click
 from mypy_boto3_ecs.client import ECSClient
 from mypy_boto3_ecs.type_defs import DescribeTasksResponseTypeDef, TaskTypeDef
 
-from serverless_aws_bastion.aws.clients import fetch_boto3_client
+from serverless_aws_bastion.aws.utils import fetch_boto3_client, load_aws_region_name
 from serverless_aws_bastion.config import TASK_BOOT_TIMEOUT
+from serverless_aws_bastion.aws.ssm import create_activation
 
 
 def launch_fargate_task(
@@ -21,6 +22,8 @@ def launch_fargate_task(
     """
     client: ECSClient = fetch_boto3_client("ecs")
 
+    activation = create_activation('serverless-aws-bastion-task-execution-role')
+
     click.secho("Starting bastion task", fg="green")
     response = client.run_task(
         cluster=cluster_name,
@@ -30,7 +33,10 @@ def launch_fargate_task(
                 {
                     "name": "ssm-bastion",
                     "environment": [
-                        {"name": "AUTHORIZED_KEYS", "value": authorized_keys},
+                        {"name": "AUTHORIZED_SSH_KEYS", "value": authorized_keys},
+                        {"name": "ACTIVATION_ID", "value": activation['ActivationId']},
+                        {"name": "ACTIVATION_CODE", "value": activation['ActivationCode']},
+                        {"name": "AWS_REGION", "value": load_aws_region_name()},
                     ],
                 }
             ]

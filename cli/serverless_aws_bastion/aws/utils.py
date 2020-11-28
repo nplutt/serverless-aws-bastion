@@ -13,9 +13,7 @@ def fetch_boto3_client(service_name: str):
     Takes a service name & region and returns a boto3 client for
     the given service.
     """
-    region_name = (
-        click.get_current_context().params.get("region") or _load_current_region_name()
-    )
+    region_name = load_aws_region_name()
     cache_key = f"{region_name}-{service_name}"
 
     if CLIENT_CACHE.get(cache_key):
@@ -33,9 +31,12 @@ def fetch_boto3_client(service_name: str):
     return client
 
 
-def _load_current_region_name() -> str:
+def load_aws_region_name() -> str:
     """
     Uses boto3 to load the current region set in the aws cli config
     """
     session = boto3.session.Session()
-    return session.region_name
+    region_name = (
+        click.get_current_context().params.get("region") or session.region_name
+    )
+    return region_name

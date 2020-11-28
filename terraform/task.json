@@ -7,6 +7,14 @@
       {
         "name": "AUTHORIZED_SSH_KEYS",
         "value": ""
+      },
+      {
+        "name": "ACTIVATION_CODE",
+        "value": ""
+      },
+      {
+        "name": "ACTIVATION_ID",
+        "value": ""
       }
     ]
   }

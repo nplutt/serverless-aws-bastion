@@ -31,6 +31,6 @@ setup(
     install_requires=["boto3", "click", "colorama"],
     extras_require={
         "test": ["pytest", "pytest-cov"],
-        "dev": ["mypy", "black", "isort", "boto3-stubs[ecs]"],
+        "dev": ["mypy", "black", "isort", "boto3-stubs[ecs,ssm]"],
     },
 )
