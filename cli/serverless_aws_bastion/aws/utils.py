@@ -1,4 +1,5 @@
-from typing import Any, Dict
+from datetime import datetime
+from typing import Any, Dict, List
 
 import boto3
 import click
@@ -40,3 +41,17 @@ def load_aws_region_name() -> str:
         click.get_current_context().params.get("region") or session.region_name
     )
     return region_name
+
+
+def get_default_tags() -> List[Dict[str, str]]:
+    tags = {
+        "CreatedBy": "serverless-aws-bastion:cli",
+        "CreatedOn": str(datetime.utcnow()),
+    }
+    return [
+        {
+            "key": key,
+            "value": value,
+        }
+        for key, value in tags.items()
+    ]

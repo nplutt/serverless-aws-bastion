@@ -1,2 +1,4 @@
 TASK_BOOT_TIMEOUT = 100
-DEFAULT_INSTANCE_NAME = 'ssh-bastion'
+CLUSTER_PROVISION_TIMEOUT = 60
+DEFAULT_NAME = 'serverless-aws-bastion'
+DEFAULT_INSTANCE_NAME = "ssh-bastion"

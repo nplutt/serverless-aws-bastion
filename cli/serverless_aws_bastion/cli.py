@@ -1,6 +1,10 @@
 import click
 
-from serverless_aws_bastion.aws.ecs import launch_fargate_task
+from serverless_aws_bastion.aws.ecs import (
+    create_fargate_cluster,
+    delete_fargate_cluster,
+    launch_fargate_task,
+)
 
 
 @click.group()
@@ -9,7 +13,39 @@ def cli():
 
 
 @cli.command(
-    "start-bastion", help="Starts up a serverless bastion in your Fargate cluster"
+    "create-fargate-cluster",
+    help="Creates a Fargate cluster to launch the bastion into",
+)
+@click.option(
+    "--cluster-name",
+    help="The name of the Fargate cluster",
+    type=click.STRING,
+)
+def handle_create_fargate_cluster(cluster_name: str):
+    create_fargate_cluster(cluster_name)
+    click.secho("Fargate cluster is running", fg="green")
+
+
+@cli.command(
+    "delete-fargate-cluster",
+    help="Deletes a give Fargate cluster",
+)
+@click.option(
+    "--cluster-name",
+    help="The name of the Fargate cluster",
+    type=click.STRING,
+)
+def handle_delete_fargate_cluster(cluster_name: str):
+    delete_fargate_cluster(cluster_name)
+    click.secho("Fargate cluster is deleted", fg="green")
+
+
+
+
+
+@cli.command(
+    "start-bastion",
+    help="Starts up a serverless bastion in your Fargate cluster",
 )
 @click.option(
     "--cluster-name",
@@ -37,7 +73,7 @@ def cli():
     type=click.STRING,
     default=None,
 )
-def launch_bastion(
+def handle_launch_bastion(
     cluster_name: str,
     subnet_ids: str,
     security_group_ids: str,
@@ -50,7 +86,6 @@ def launch_bastion(
         security_group_ids=security_group_ids,
         authorized_keys=authorized_keys,
     )
-
     click.secho("Task is running", fg="green")
 
 
