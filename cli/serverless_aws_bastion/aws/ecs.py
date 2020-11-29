@@ -4,9 +4,10 @@ from typing import List
 import click
 from mypy_boto3_ecs.client import ECSClient
 from mypy_boto3_ecs.type_defs import (
-    ClusterTypeDef,
     CreateClusterResponseTypeDef,
+    DescribeClustersResponseTypeDef,
     DescribeTasksResponseTypeDef,
+    RunTaskResponseTypeDef,
     TaskTypeDef,
 )
 
@@ -18,7 +19,11 @@ from serverless_aws_bastion.aws.utils import (
 )
 from serverless_aws_bastion.config import (
     CLUSTER_PROVISION_TIMEOUT,
+    DEFAULT_NAME,
     TASK_BOOT_TIMEOUT,
+    TASK_DEFINITION,
+    TASK_CPU,
+    TASK_MEMORY,
 )
 from serverless_aws_bastion.enums.cluster_status import ClusterStatus
 
@@ -33,7 +38,7 @@ def create_fargate_cluster(cluster_name: str) -> CreateClusterResponseTypeDef:
     response = client.create_cluster(
         clusterName=cluster_name,
         capacityProviders=["FARGATE"],
-        tags=get_default_tags(),
+        tags=get_default_tags('ecs'),
     )
     wait_for_fargate_cluster_status(cluster_name, ClusterStatus.ACTIVE)
     return response
@@ -50,7 +55,7 @@ def delete_fargate_cluster(cluster_name: str) -> None:
     wait_for_fargate_cluster_status(cluster_name, ClusterStatus.INACTIVE)
 
 
-def describe_fargate_cluster(cluster_name: str) -> ClusterTypeDef:
+def describe_fargate_cluster(cluster_name: str) -> DescribeClustersResponseTypeDef:
     """
     Fetches the status for a given cluster
     """
@@ -64,7 +69,8 @@ def wait_for_fargate_cluster_status(
     timeout_seconds: int = CLUSTER_PROVISION_TIMEOUT,
 ) -> None:
     """
-    Waits for a cluster to finish provisioning
+    Waits for a cluster to to reach a desired status by polling the current
+    state of the cluster
     """
     cluster_provisioned = False
     wait_time = 0
@@ -89,19 +95,23 @@ def wait_for_fargate_cluster_status(
         click.secho("Cluster failed to provision", err=True)
 
 
-def create_task_definition():
+def create_task_definition(task_role_arn: str, execution_role_arn: str):
     """
     Creates the task definition that will be used to launch the
     serverless bastion container
     """
     client: ECSClient = fetch_boto3_client("ecs")
+
+    click.secho("Creating bastion ECS task", fg="green")
     client.register_task_definition(
-        family='',
-        networkMode='awsvpc',
-        taskRoleArn='',
-        executionRoleArn='',
-        containerDefinitions=[],
-        tags=get_default_tags(),
+        family=DEFAULT_NAME,
+        networkMode="awsvpc",
+        cpu=TASK_CPU,
+        memory=TASK_MEMORY,
+        taskRoleArn=task_role_arn,
+        executionRoleArn=execution_role_arn,
+        containerDefinitions=TASK_DEFINITION,
+        tags=get_default_tags('ecs'),
     )
 
 
@@ -110,7 +120,7 @@ def launch_fargate_task(
     subnet_ids: str,
     security_group_ids: str,
     authorized_keys: str,
-) -> TaskTypeDef:
+) -> RunTaskResponseTypeDef:
     """
     Launches the ssh bastion Fargate task into the proper subnets & security groups,
     also sends in the authorized keys.
@@ -148,6 +158,7 @@ def launch_fargate_task(
                 "assignPublicIp": "ENABLED",
             }
         },
+        tags=get_default_tags('ecs'),
     )
 
     wait_for_tasks_to_start(cluster_name, response["tasks"])

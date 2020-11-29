@@ -43,15 +43,16 @@ def load_aws_region_name() -> str:
     return region_name
 
 
-def get_default_tags() -> List[Dict[str, str]]:
+def get_default_tags(service: str) -> List[Dict[str, str]]:
     tags = {
         "CreatedBy": "serverless-aws-bastion:cli",
         "CreatedOn": str(datetime.utcnow()),
     }
+    capitalize = service == 'iam'
     return [
         {
-            "key": key,
-            "value": value,
+            f"{'K' if capitalize else 'k'}ey": key,
+            f"{'V' if capitalize else 'v'}alue": value,
         }
         for key, value in tags.items()
     ]

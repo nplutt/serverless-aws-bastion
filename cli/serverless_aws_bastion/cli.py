@@ -4,6 +4,11 @@ from serverless_aws_bastion.aws.ecs import (
     create_fargate_cluster,
     delete_fargate_cluster,
     launch_fargate_task,
+    create_task_definition,
+)
+from serverless_aws_bastion.aws.iam import (
+    create_bastion_task_execution_role,
+    create_bastion_task_role,
 )
 
 
@@ -23,7 +28,7 @@ def cli():
 )
 def handle_create_fargate_cluster(cluster_name: str):
     create_fargate_cluster(cluster_name)
-    click.secho("Fargate cluster is running", fg="green")
+    click.secho("Fargate cluster running", fg="green")
 
 
 @cli.command(
@@ -37,10 +42,38 @@ def handle_create_fargate_cluster(cluster_name: str):
 )
 def handle_delete_fargate_cluster(cluster_name: str):
     delete_fargate_cluster(cluster_name)
-    click.secho("Fargate cluster is deleted", fg="green")
+    click.secho("Fargate cluster deleted", fg="green")
 
 
+@cli.command(
+    "create-bastion-task",
+    help="Creates the ECS task used to launch the bastion",
+)
+@click.option(
+    "--task-role-arn",
+    help="The role used by the bastion task to communicate with ECS & SSM, "
+    "if left blank the default role will be created and used.",
+    type=click.STRING,
+    default=None,
+)
+@click.option(
+    "--execution-role-arn",
+    help="The role used by ECS to launch and manage the task, if left blank "
+    "the default role will be created and used.",
+    type=click.STRING,
+    default=None,
+)
+def handle_create_bastion_task(
+    task_role_arn: str = None, execution_role_arn: str = None
+):
+    if not task_role_arn:
+        task_role_arn = create_bastion_task_role()
 
+    if not execution_role_arn:
+        execution_role_arn = create_bastion_task_execution_role()
+
+    create_task_definition(task_role_arn, execution_role_arn)
+    click.secho("Bastion ECS task created", fg="green")
 
 
 @cli.command(
