@@ -2,9 +2,9 @@ import click
 
 from serverless_aws_bastion.aws.ecs import (
     create_fargate_cluster,
+    create_task_definition,
     delete_fargate_cluster,
     launch_fargate_task,
-    create_task_definition,
 )
 from serverless_aws_bastion.aws.iam import (
     create_bastion_task_execution_role,

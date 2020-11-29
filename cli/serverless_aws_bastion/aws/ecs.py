@@ -21,9 +21,10 @@ from serverless_aws_bastion.config import (
     CLUSTER_PROVISION_TIMEOUT,
     DEFAULT_NAME,
     TASK_BOOT_TIMEOUT,
-    TASK_DEFINITION,
     TASK_CPU,
+    TASK_DEFINITION,
     TASK_MEMORY,
+    TASK_ROLE_NAME,
 )
 from serverless_aws_bastion.enums.cluster_status import ClusterStatus
 
@@ -38,7 +39,7 @@ def create_fargate_cluster(cluster_name: str) -> CreateClusterResponseTypeDef:
     response = client.create_cluster(
         clusterName=cluster_name,
         capacityProviders=["FARGATE"],
-        tags=get_default_tags('ecs'),
+        tags=get_default_tags("ecs"),
     )
     wait_for_fargate_cluster_status(cluster_name, ClusterStatus.ACTIVE)
     return response
@@ -111,7 +112,7 @@ def create_task_definition(task_role_arn: str, execution_role_arn: str):
         taskRoleArn=task_role_arn,
         executionRoleArn=execution_role_arn,
         containerDefinitions=TASK_DEFINITION,
-        tags=get_default_tags('ecs'),
+        tags=get_default_tags("ecs"),
     )
 
 
@@ -127,16 +128,16 @@ def launch_fargate_task(
     """
     client: ECSClient = fetch_boto3_client("ecs")
 
-    activation = create_activation("serverless-aws-bastion-task-execution-role")
+    activation = create_activation(TASK_ROLE_NAME)
 
     click.secho("Starting bastion task", fg="green")
     response = client.run_task(
         cluster=cluster_name,
-        taskDefinition=f"ssh-task",
+        taskDefinition=DEFAULT_NAME,
         overrides={
             "containerOverrides": [
                 {
-                    "name": "ssm-bastion",
+                    "name": DEFAULT_NAME,
                     "environment": [
                         {"name": "AUTHORIZED_SSH_KEYS", "value": authorized_keys},
                         {"name": "ACTIVATION_ID", "value": activation["ActivationId"]},
@@ -158,7 +159,7 @@ def launch_fargate_task(
                 "assignPublicIp": "ENABLED",
             }
         },
-        tags=get_default_tags('ecs'),
+        tags=get_default_tags("ecs"),
     )
 
     wait_for_tasks_to_start(cluster_name, response["tasks"])

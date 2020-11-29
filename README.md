@@ -7,12 +7,14 @@ python setup.py develop
 ```
 
 ## Feature To Do
-- [] Terraform module to create Fargate cluster and task
-- [] CLI to manage booting up Fargate task
-- [] Scripts to allow SSM SSH into Fargate task
+- [x] CLI to manage booting up Fargate task
+- [x] CLI for creating bastion stack (cluster, task, iam)
+- [] CLI to destroy bastion stack (cluster, task, iam)
+- [] SSH functionality via SSM
 - [] Task timeout functionality
-- [] SSM machine cleanup
-- [] Basic security group to launch the Task into
+- [] CLI for machine cleanup on SSM side
+- [] CLI to create security group to launch task into
+- [] Scripts to allow SSM SSH into Fargate task
 - [] Personal vs group bastion functionality
 
 ## Notes

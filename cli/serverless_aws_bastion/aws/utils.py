@@ -48,7 +48,7 @@ def get_default_tags(service: str) -> List[Dict[str, str]]:
         "CreatedBy": "serverless-aws-bastion:cli",
         "CreatedOn": str(datetime.utcnow()),
     }
-    capitalize = service == 'iam'
+    capitalize = service in "iam", 'ssm'
     return [
         {
             f"{'K' if capitalize else 'k'}ey": key,
