@@ -14,11 +14,9 @@ from serverless_aws_bastion.config import (
 )
 
 
-def create_deregister_ssm_policy() -> str:
-    client: IAMClient = fetch_boto3_client("iam")
-    client.create_policy(
-
-    )
+# def create_deregister_ssm_policy() -> str:
+#     client: IAMClient = fetch_boto3_client("iam")
+#     client.create_policy()
 
 
 def create_bastion_task_role() -> str:

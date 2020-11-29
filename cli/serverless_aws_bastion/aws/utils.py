@@ -43,12 +43,12 @@ def load_aws_region_name() -> str:
     return region_name
 
 
-def get_default_tags(service: str) -> List[Dict[str, str]]:
+def get_default_tags(service: str) -> List[Any]:
     tags = {
         "CreatedBy": "serverless-aws-bastion:cli",
         "CreatedOn": str(datetime.utcnow()),
     }
-    capitalize = service in "iam", 'ssm'
+    capitalize = service in "iam", "ssm"
     return [
         {
             f"{'K' if capitalize else 'k'}ey": key,
