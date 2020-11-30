@@ -21,7 +21,7 @@ COPY --from=builder /go/src/github.com/amazon-ssm-agent/bin/linux_amd64/ /usr/bi
 COPY --from=builder /go/src/github.com/amazon-ssm-agent/bin/amazon-ssm-agent.json.template /etc/amazon/ssm/amazon-ssm-agent.json
 COPY --from=builder /go/src/github.com/amazon-ssm-agent/bin/seelog_unix.xml /etc/amazon/ssm/seelog.xml
 
-RUN apk add --no-cache python3  py3-pip bash openssh
+RUN apk add --no-cache python3  py3-pip bash openssh dumb-init
 RUN pip3 install --upgrade pip
 RUN pip3 install awscli
 RUN aws --version
@@ -29,4 +29,4 @@ RUN aws --version
 ADD boot.sh /
 RUN chmod +x /boot.sh
 
-CMD ["/boot.sh"]
+CMD ["dumb-init", "/bin/bash", "/boot.sh"]

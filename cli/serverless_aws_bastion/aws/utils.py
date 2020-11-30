@@ -4,6 +4,7 @@ from typing import Any, Dict, List
 import boto3
 import click
 from botocore.config import Config
+from mypy_boto3_sts.client import STSClient
 
 
 CLIENT_CACHE: Dict[str, Any] = {}
@@ -43,12 +44,20 @@ def load_aws_region_name() -> str:
     return region_name
 
 
+def load_aws_account_id() -> str:
+    """
+    Uses boto3 to load the current account id
+    """
+    client: STSClient = fetch_boto3_client('sts')
+    return client.get_caller_identity()['Account']
+
+
 def get_default_tags(service: str) -> List[Any]:
     tags = {
         "CreatedBy": "serverless-aws-bastion:cli",
         "CreatedOn": str(datetime.utcnow()),
     }
-    capitalize = service in "iam", "ssm"
+    capitalize = service in ("iam", "ssm")
     return [
         {
             f"{'K' if capitalize else 'k'}ey": key,
