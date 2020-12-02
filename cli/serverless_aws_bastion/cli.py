@@ -24,7 +24,14 @@ def cli():
 @click.option(
     "--cluster-name",
     help="The name of the Fargate cluster",
+    required=True,
     type=click.STRING,
+)
+@click.option(
+    "--region",
+    help="The aws region where the Fargate cluster should be created",
+    type=click.STRING,
+    default=None
 )
 def handle_create_fargate_cluster(cluster_name: str):
     create_fargate_cluster(cluster_name)
@@ -38,7 +45,14 @@ def handle_create_fargate_cluster(cluster_name: str):
 @click.option(
     "--cluster-name",
     help="The name of the Fargate cluster",
+    required=True,
     type=click.STRING,
+)
+@click.option(
+    "--region",
+    help="The aws region where the Fargate cluster should be deleted",
+    type=click.STRING,
+    default=None
 )
 def handle_delete_fargate_cluster(cluster_name: str):
     delete_fargate_cluster(cluster_name)
@@ -63,6 +77,12 @@ def handle_delete_fargate_cluster(cluster_name: str):
     type=click.STRING,
     default=None,
 )
+@click.option(
+    "--region",
+    help="The aws region where the Fargate task should be created",
+    type=click.STRING,
+    default=None
+)
 def handle_create_bastion_task(
     task_role_arn: str = None, execution_role_arn: str = None
 ):
@@ -83,35 +103,38 @@ def handle_create_bastion_task(
 @click.option(
     "--cluster-name",
     help="The name of the Fargate cluster to start the serverless bastion in",
+    required=True,
     type=click.STRING,
 )
 @click.option(
     "--subnet-ids",
     help="A comma separated list of VPC subnet ids to launch the bastion into",
+    required=True,
     type=click.STRING,
 )
 @click.option(
     "--security-group-ids",
     help="A comma separated list of security group ids to launch the bastion into",
+    required=True,
     type=click.STRING,
 )
 @click.option(
     "--authorized-keys",
     help="All of the public keys that the bastion should allow",
+    required=True,
     type=click.STRING,
 )
 @click.option(
     "--region",
-    help="The aws region where the Fargate task should be started in",
+    help="The aws region where the Fargate task should be started",
     type=click.STRING,
-    default=None,
+    default=None
 )
 def handle_launch_bastion(
     cluster_name: str,
     subnet_ids: str,
     security_group_ids: str,
     authorized_keys: str,
-    region: str = None,
 ) -> None:
     launch_fargate_task(
         cluster_name=cluster_name,
