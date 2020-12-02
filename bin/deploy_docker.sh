@@ -2,6 +2,6 @@
 
 set -e
 
-cd "$(dirname "$0")/../docker-image"
-docker build -t nplutt/ssm-bastion .
+cd "$(dirname "$0")/.."
+docker build -t nplutt/serverless-ssm-bastion .
 docker push nplutt/serverless-ssm-bastion:latest
