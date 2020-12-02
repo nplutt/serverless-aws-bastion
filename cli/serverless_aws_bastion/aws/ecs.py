@@ -113,7 +113,7 @@ def create_task_definition(task_role_arn: str, execution_role_arn: str):
         executionRoleArn=execution_role_arn,
         containerDefinitions=[
             {
-                "image": "nplutt/ssm-bastion",
+                "image": f"nplutt/{DEFAULT_NAME}",
                 "name": DEFAULT_NAME,
                 "essential": True,
                 "logConfiguration": {
