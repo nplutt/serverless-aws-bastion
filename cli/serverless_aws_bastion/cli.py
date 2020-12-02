@@ -31,7 +31,7 @@ def cli():
     "--region",
     help="The aws region where the Fargate cluster should be created",
     type=click.STRING,
-    default=None
+    default=None,
 )
 def handle_create_fargate_cluster(cluster_name: str):
     create_fargate_cluster(cluster_name)
@@ -52,7 +52,7 @@ def handle_create_fargate_cluster(cluster_name: str):
     "--region",
     help="The aws region where the Fargate cluster should be deleted",
     type=click.STRING,
-    default=None
+    default=None,
 )
 def handle_delete_fargate_cluster(cluster_name: str):
     delete_fargate_cluster(cluster_name)
@@ -81,7 +81,7 @@ def handle_delete_fargate_cluster(cluster_name: str):
     "--region",
     help="The aws region where the Fargate task should be created",
     type=click.STRING,
-    default=None
+    default=None,
 )
 def handle_create_bastion_task(
     task_role_arn: str = None, execution_role_arn: str = None
@@ -128,7 +128,7 @@ def handle_create_bastion_task(
     "--region",
     help="The aws region where the Fargate task should be started",
     type=click.STRING,
-    default=None
+    default=None,
 )
 def handle_launch_bastion(
     cluster_name: str,

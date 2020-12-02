@@ -48,8 +48,8 @@ def load_aws_account_id() -> str:
     """
     Uses boto3 to load the current account id
     """
-    client: STSClient = fetch_boto3_client('sts')
-    return client.get_caller_identity()['Account']
+    client: STSClient = fetch_boto3_client("sts")
+    return client.get_caller_identity()["Account"]
 
 
 def get_default_tags(service: str) -> List[Any]:

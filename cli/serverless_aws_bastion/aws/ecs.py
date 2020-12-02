@@ -121,8 +121,8 @@ def create_task_definition(task_role_arn: str, execution_role_arn: str):
                     "options": {
                         "awslogs-group": "/ecs/ssh-bastion",
                         "awslogs-region": "us-west-2",
-                        "awslogs-stream-prefix": "ecs"
-                    }
+                        "awslogs-stream-prefix": "ecs",
+                    },
                 },
             },
         ],

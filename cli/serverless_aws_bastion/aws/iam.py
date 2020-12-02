@@ -10,9 +10,9 @@ from serverless_aws_bastion.aws.utils import (
     load_aws_account_id,
 )
 from serverless_aws_bastion.config import (
+    SSM_DEREGISTER_POLICY_NAME,
     TASK_EXECUTION_ROLE_NAME,
     TASK_ROLE_NAME,
-    SSM_DEREGISTER_POLICY_NAME,
 )
 
 
@@ -27,8 +27,8 @@ def create_deregister_ssm_policy() -> str:
     try:
         click.secho(f"Creating {SSM_DEREGISTER_POLICY_NAME} policy", fg="green")
         response = client.create_policy(
-            Description='Used by serverless-aws-bastion ECS task to '
-                        'deregister itself from SSM',
+            Description="Used by serverless-aws-bastion ECS task to "
+            "deregister itself from SSM",
             PolicyName=SSM_DEREGISTER_POLICY_NAME,
             PolicyDocument=json.dumps(
                 {
@@ -40,16 +40,16 @@ def create_deregister_ssm_policy() -> str:
                                 "ssm:DescribeInstanceInformation",
                             ],
                             "Effect": "Allow",
-                            "Resource": "*"
+                            "Resource": "*",
                         }
-                    ]
+                    ],
                 }
             ),
         )
-        return response['Policy']['Arn']
+        return response["Policy"]["Arn"]
     except client.exceptions.EntityAlreadyExistsException:
         account_id = load_aws_account_id()
-        return f'arn:aws:iam::{account_id}:policy/{SSM_DEREGISTER_POLICY_NAME}'
+        return f"arn:aws:iam::{account_id}:policy/{SSM_DEREGISTER_POLICY_NAME}"
 
 
 def create_bastion_task_role() -> str:
