@@ -26,7 +26,7 @@ RUN pip3 install --upgrade pip
 RUN pip3 install awscli
 RUN aws --version
 
-ADD boot.sh /
+ADD ./boot.sh /
 RUN chmod +x /boot.sh
 
 CMD ["dumb-init", "/bin/bash", "/boot.sh"]
