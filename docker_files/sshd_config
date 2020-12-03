@@ -122,6 +122,7 @@ AuthorizedKeysFile	.ssh/authorized_keys
 #	ForceCommand cvs server
 
 Port 22
+ListenAddress 127.0.0.1
 PermitRootLogin no
 StrictModes yes
 PubkeyAuthentication yes
