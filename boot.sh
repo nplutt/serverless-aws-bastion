@@ -11,5 +11,9 @@ cleanup() {
 }
 trap cleanup EXIT SIGTERM SIGKILL
 
+echo "Starting ssh..."
+/usr/sbin/sshd -Dd -e4 -f /etc/ssh/sshd_config
+
+echo "Registering & starting ssm..."
 /usr/bin/amazon-ssm-agent -register -code ${ACTIVATION_CODE} -id ${ACTIVATION_ID} -region ${AWS_REGION} -clear -y
 /usr/bin/amazon-ssm-agent

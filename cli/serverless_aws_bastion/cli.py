@@ -33,7 +33,7 @@ def cli():
     type=click.STRING,
     default=None,
 )
-def handle_create_fargate_cluster(cluster_name: str):
+def handle_create_fargate_cluster(cluster_name: str, region: str):
     create_fargate_cluster(cluster_name)
     click.secho("Fargate cluster running", fg="green")
 
@@ -54,7 +54,7 @@ def handle_create_fargate_cluster(cluster_name: str):
     type=click.STRING,
     default=None,
 )
-def handle_delete_fargate_cluster(cluster_name: str):
+def handle_delete_fargate_cluster(cluster_name: str, region: str):
     delete_fargate_cluster(cluster_name)
     click.secho("Fargate cluster deleted", fg="green")
 
@@ -84,7 +84,7 @@ def handle_delete_fargate_cluster(cluster_name: str):
     default=None,
 )
 def handle_create_bastion_task(
-    task_role_arn: str = None, execution_role_arn: str = None
+    task_role_arn: str = None, execution_role_arn: str = None, region: str = None,
 ):
     if not task_role_arn:
         task_role_arn = create_bastion_task_role()
@@ -135,6 +135,7 @@ def handle_launch_bastion(
     subnet_ids: str,
     security_group_ids: str,
     authorized_keys: str,
+    region: str,
 ) -> None:
     launch_fargate_task(
         cluster_name=cluster_name,
