@@ -121,7 +121,7 @@ AuthorizedKeysFile	.ssh/authorized_keys
 #	PermitTTY no
 #	ForceCommand cvs server
 
-Port 64822
+Port 22
 PermitRootLogin no
 StrictModes yes
 PubkeyAuthentication yes

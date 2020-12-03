@@ -39,6 +39,6 @@ RUN rm -rf /tmp/* /var/cache/apk/*
 ADD docker_files/boot.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/boot.sh
 
-EXPOSE 64822
+EXPOSE 22
 
 CMD ["dumb-init", "/bin/bash", "/usr/local/bin/boot.sh"]
