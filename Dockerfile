@@ -27,6 +27,7 @@ RUN ssh-keygen -t dsa -b 1024 -N "" -f /etc/ssh/ssh_host_dsa_key
 RUN ssh-keygen -t ecdsa -b 521 -N "" -f /etc/ssh/ssh_host_ecdsa_key
 RUN ssh-keygen -t ed25519 -b 512 -N "" -f /etc/ssh/ssh_host_ed25519_key
 RUN mkdir -p /home/ssm-user/.ssh
+ADD docker_files/sshd_config /etc/ssh/
 
 RUN apk add --no-cache python3 py3-pip bash dumb-init
 RUN pip3 install --upgrade pip
@@ -35,7 +36,7 @@ RUN aws --version
 
 RUN rm -rf /tmp/* /var/cache/apk/*
 
-ADD ./boot.sh /usr/local/bin/
+ADD docker_files/boot.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/boot.sh
 
 CMD ["dumb-init", "/bin/bash", "/usr/local/bin/boot.sh"]

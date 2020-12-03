@@ -11,6 +11,9 @@ cleanup() {
 }
 trap cleanup EXIT SIGTERM SIGKILL
 
+echo "Adding ssh key to authorized keys..."
+echo ${AUTHORIZED_KEYS} >> /home/ssm-user/.ssh/authorized_keys
+
 echo "Starting ssh..."
 /usr/sbin/sshd -Dd -e4 -f /etc/ssh/sshd_config &
 
