@@ -28,11 +28,12 @@ RUN ssh-keygen -t dsa -b 1024 -N "" -f /etc/ssh/ssh_host_dsa_key
 RUN ssh-keygen -t ecdsa -b 521 -N "" -f /etc/ssh/ssh_host_ecdsa_key
 RUN ssh-keygen -t ed25519 -b 512 -N "" -f /etc/ssh/ssh_host_ed25519_key
 
-RUN mkdir -p /home/ssm-user/.ssh
-RUN chmod 700 /home/ssm-user/.ssh
-RUN touch /home/ssm-user/.ssh/authorized_keys
-RUN chmod 444 /home/ssm-user/.ssh/authorized_keys
-RUN chown -R ssm-user:ssm-user /home/ssm-user/
+RUN adduser ssh-user
+RUN mkdir -p /home/ssh-user/.ssh
+RUN chmod 700 /home/ssh-user/.ssh
+RUN touch /home/ssh-user/.ssh/authorized_keys
+RUN chmod 444 /home/ssh-user/.ssh/authorized_keys
+RUN chown -R ssh-user:ssh-user /home/ssh-user/
 
 ADD docker_files/sshd_config /etc/ssh/
 
