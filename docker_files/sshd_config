@@ -130,6 +130,7 @@ StrictModes yes
 PubkeyAuthentication yes
 PasswordAuthentication no
 PermitEmptyPasswords no
+UsePAM yes
 
 #HostKey /etc/ssh/ssh_host_rsa_key
 #HostKey /etc/ssh/ssh_host_dsa_key
