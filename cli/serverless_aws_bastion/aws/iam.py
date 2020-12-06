@@ -25,7 +25,8 @@ def create_deregister_ssm_policy() -> str:
     """
     client: IAMClient = fetch_boto3_client("iam")
     try:
-        click.secho(f"Creating {SSM_DEREGISTER_POLICY_NAME} policy", fg="green")
+        click.secho(
+            f"Creating {SSM_DEREGISTER_POLICY_NAME} policy", fg="green")
         response = client.create_policy(
             Description="Used by serverless-aws-bastion ECS task to "
             "deregister itself from SSM",
