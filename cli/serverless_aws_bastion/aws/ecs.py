@@ -3,29 +3,22 @@ from typing import List
 
 import click
 from mypy_boto3_ecs.client import ECSClient
-from mypy_boto3_ecs.type_defs import (
-    CreateClusterResponseTypeDef,
-    DescribeClustersResponseTypeDef,
-    DescribeTasksResponseTypeDef,
-    RunTaskResponseTypeDef,
-    TaskTypeDef,
-)
-
+from mypy_boto3_ecs.type_defs import CreateClusterResponseTypeDef
+from mypy_boto3_ecs.type_defs import DescribeClustersResponseTypeDef
+from mypy_boto3_ecs.type_defs import DescribeTasksResponseTypeDef
+from mypy_boto3_ecs.type_defs import RunTaskResponseTypeDef
+from mypy_boto3_ecs.type_defs import TaskTypeDef
 from serverless_aws_bastion.aws.ssm import create_activation
-from serverless_aws_bastion.aws.utils import (
-    fetch_boto3_client,
-    get_default_tags,
-    load_aws_region_name,
-)
-from serverless_aws_bastion.config import (
-    CLUSTER_PROVISION_TIMEOUT,
-    DEFAULT_NAME,
-    TASK_BOOT_TIMEOUT,
-    TASK_CPU,
-    TASK_DEFINITION,
-    TASK_MEMORY,
-    TASK_ROLE_NAME,
-)
+from serverless_aws_bastion.aws.utils import fetch_boto3_client
+from serverless_aws_bastion.aws.utils import get_default_tags
+from serverless_aws_bastion.aws.utils import load_aws_region_name
+from serverless_aws_bastion.config import CLUSTER_PROVISION_TIMEOUT
+from serverless_aws_bastion.config import DEFAULT_NAME
+from serverless_aws_bastion.config import TASK_BOOT_TIMEOUT
+from serverless_aws_bastion.config import TASK_CPU
+from serverless_aws_bastion.config import TASK_DEFINITION
+from serverless_aws_bastion.config import TASK_MEMORY
+from serverless_aws_bastion.config import TASK_ROLE_NAME
 from serverless_aws_bastion.enums.cluster_status import ClusterStatus
 
 

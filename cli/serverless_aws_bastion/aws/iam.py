@@ -1,19 +1,15 @@
 import json
-from typing import List, Optional
+from typing import List
+from typing import Optional
 
 import click
 from mypy_boto3_iam.client import IAMClient
-
-from serverless_aws_bastion.aws.utils import (
-    fetch_boto3_client,
-    get_default_tags,
-    load_aws_account_id,
-)
-from serverless_aws_bastion.config import (
-    SSM_DEREGISTER_POLICY_NAME,
-    TASK_EXECUTION_ROLE_NAME,
-    TASK_ROLE_NAME,
-)
+from serverless_aws_bastion.aws.utils import fetch_boto3_client
+from serverless_aws_bastion.aws.utils import get_default_tags
+from serverless_aws_bastion.aws.utils import load_aws_account_id
+from serverless_aws_bastion.config import SSM_DEREGISTER_POLICY_NAME
+from serverless_aws_bastion.config import TASK_EXECUTION_ROLE_NAME
+from serverless_aws_bastion.config import TASK_ROLE_NAME
 
 
 def create_deregister_ssm_policy() -> str:

@@ -1,15 +1,10 @@
 import click
-
-from serverless_aws_bastion.aws.ecs import (
-    create_fargate_cluster,
-    create_task_definition,
-    delete_fargate_cluster,
-    launch_fargate_task,
-)
-from serverless_aws_bastion.aws.iam import (
-    create_bastion_task_execution_role,
-    create_bastion_task_role,
-)
+from serverless_aws_bastion.aws.ecs import create_fargate_cluster
+from serverless_aws_bastion.aws.ecs import create_task_definition
+from serverless_aws_bastion.aws.ecs import delete_fargate_cluster
+from serverless_aws_bastion.aws.ecs import launch_fargate_task
+from serverless_aws_bastion.aws.iam import create_bastion_task_execution_role
+from serverless_aws_bastion.aws.iam import create_bastion_task_role
 
 
 @click.group()
