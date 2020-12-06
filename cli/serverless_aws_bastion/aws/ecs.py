@@ -49,7 +49,8 @@ def delete_fargate_cluster(cluster_name: str) -> None:
     wait_for_fargate_cluster_status(cluster_name, ClusterStatus.INACTIVE)
 
 
-def describe_fargate_cluster(cluster_name: str) -> DescribeClustersResponseTypeDef:
+def describe_fargate_cluster(cluster_name: str
+                             ) -> DescribeClustersResponseTypeDef:
     """
     Fetches the status for a given cluster
     """
@@ -58,9 +59,9 @@ def describe_fargate_cluster(cluster_name: str) -> DescribeClustersResponseTypeD
 
 
 def wait_for_fargate_cluster_status(
-    cluster_name: str,
-    cluster_stats: ClusterStatus,
-    timeout_seconds: int = CLUSTER_PROVISION_TIMEOUT,
+        cluster_name: str,
+        cluster_stats: ClusterStatus,
+        timeout_seconds: int = CLUSTER_PROVISION_TIMEOUT,
 ) -> None:
     """
     Waits for a cluster to to reach a desired status by polling the current
@@ -69,18 +70,18 @@ def wait_for_fargate_cluster_status(
     cluster_provisioned = False
     wait_time = 0
 
-    click.secho(
-        f"Waiting for cluster to reach {cluster_stats.value} state...", fg="green"
-    )
+    click.secho(f"Waiting for cluster to reach {cluster_stats.value} state...",
+                fg="green")
     while not cluster_provisioned and wait_time < timeout_seconds:
         cluster_info = describe_fargate_cluster(cluster_name)
 
         if len(cluster_info["failures"]) > 0:
             break
 
-        cluster_provisioned = all(
-            [c["status"] == cluster_stats.value for c in cluster_info["clusters"]]
-        )
+        cluster_provisioned = all([
+            c["status"] == cluster_stats.value
+            for c in cluster_info["clusters"]
+        ])
 
         sleep(2)
         wait_time += 2
@@ -124,10 +125,10 @@ def create_task_definition(task_role_arn: str, execution_role_arn: str):
 
 
 def launch_fargate_task(
-    cluster_name: str,
-    subnet_ids: str,
-    security_group_ids: str,
-    authorized_keys: str,
+        cluster_name: str,
+        subnet_ids: str,
+        security_group_ids: str,
+        authorized_keys: str,
 ) -> RunTaskResponseTypeDef:
     """
     Launches the ssh bastion Fargate task into the proper subnets & security groups,
@@ -142,20 +143,28 @@ def launch_fargate_task(
         cluster=cluster_name,
         taskDefinition=DEFAULT_NAME,
         overrides={
-            "containerOverrides": [
-                {
-                    "name": DEFAULT_NAME,
-                    "environment": [
-                        {"name": "AUTHORIZED_SSH_KEYS", "value": authorized_keys},
-                        {"name": "ACTIVATION_ID", "value": activation["ActivationId"]},
-                        {
-                            "name": "ACTIVATION_CODE",
-                            "value": activation["ActivationCode"],
-                        },
-                        {"name": "AWS_REGION", "value": load_aws_region_name()},
-                    ],
-                }
-            ]
+            "containerOverrides": [{
+                "name":
+                DEFAULT_NAME,
+                "environment": [
+                    {
+                        "name": "AUTHORIZED_SSH_KEYS",
+                        "value": authorized_keys
+                    },
+                    {
+                        "name": "ACTIVATION_ID",
+                        "value": activation["ActivationId"]
+                    },
+                    {
+                        "name": "ACTIVATION_CODE",
+                        "value": activation["ActivationCode"],
+                    },
+                    {
+                        "name": "AWS_REGION",
+                        "value": load_aws_region_name()
+                    },
+                ],
+            }]
         },
         count=1,
         launchType="FARGATE",
@@ -174,8 +183,8 @@ def launch_fargate_task(
 
 
 def describe_task(
-    cluster_name: str,
-    task_arns: List[str],
+        cluster_name: str,
+        task_arns: List[str],
 ) -> DescribeTasksResponseTypeDef:
     """
     Fetches the statuses for a group of tasks
@@ -189,9 +198,9 @@ def describe_task(
 
 
 def wait_for_tasks_to_start(
-    cluster_name: str,
-    tasks: List[TaskTypeDef],
-    timeout_seconds: int = TASK_BOOT_TIMEOUT,
+        cluster_name: str,
+        tasks: List[TaskTypeDef],
+        timeout_seconds: int = TASK_BOOT_TIMEOUT,
 ) -> None:
     """
     Waits for all of the tasks to reach their desired state by polling
@@ -209,9 +218,9 @@ def wait_for_tasks_to_start(
         if len(task_info["failures"]) > 0:
             break
 
-        tasks_started = all(
-            [t["lastStatus"] == t["desiredStatus"] for t in task_info["tasks"]]
-        )
+        tasks_started = all([
+            t["lastStatus"] == t["desiredStatus"] for t in task_info["tasks"]
+        ])
 
         sleep(2)
         wait_time += 2

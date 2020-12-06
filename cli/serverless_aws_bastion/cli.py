@@ -79,9 +79,9 @@ def handle_delete_fargate_cluster(cluster_name: str, region: str):
     default=None,
 )
 def handle_create_bastion_task(
-    task_role_arn: str = None,
-    execution_role_arn: str = None,
-    region: str = None,
+        task_role_arn: str = None,
+        execution_role_arn: str = None,
+        region: str = None,
 ):
     if not task_role_arn:
         task_role_arn = create_bastion_task_role()
@@ -111,7 +111,8 @@ def handle_create_bastion_task(
 )
 @click.option(
     "--security-group-ids",
-    help="A comma separated list of security group ids to launch the bastion into",
+    help=
+    "A comma separated list of security group ids to launch the bastion into",
     required=True,
     type=click.STRING,
 )
@@ -128,11 +129,11 @@ def handle_create_bastion_task(
     default=None,
 )
 def handle_launch_bastion(
-    cluster_name: str,
-    subnet_ids: str,
-    security_group_ids: str,
-    authorized_keys: str,
-    region: str,
+        cluster_name: str,
+        subnet_ids: str,
+        security_group_ids: str,
+        authorized_keys: str,
+        region: str,
 ) -> None:
     launch_fargate_task(
         cluster_name=cluster_name,

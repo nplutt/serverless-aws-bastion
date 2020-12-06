@@ -1,7 +1,6 @@
 from setuptools import find_packages
 from setuptools import setup
 
-
 setup(
     name="serverless-aws-bastion",
     version="0.0.1",
@@ -10,7 +9,9 @@ setup(
     author_email="nplutt@gmail.com",
     license="MIT",
     url="https://github.com/nplutt/serverless-aws-bastion",
-    project_urls={"Source Code": "https://github.com/nplutt/serverless-aws-bastion/"},
+    project_urls={
+        "Source Code": "https://github.com/nplutt/serverless-aws-bastion/"
+    },
     keywords="serverless aws bastion jump server python ssh",
     classifiers=[
         "Intended Audience :: Developers",
@@ -21,7 +22,7 @@ setup(
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     python_requires=">=3.6",
-    packages=find_packages(exclude=("tests",)),
+    packages=find_packages(exclude=("tests", )),
     include_package_data=True,
     entry_points={
         "console_scripts": [
@@ -29,7 +30,9 @@ setup(
             "serverless-aws-bastion =  serverless_aws_bastion.cli:main",
         ],
     },
-    install_requires=["boto3", "boto3-stubs[ecs,iam,ssm,sts]", "click", "colorama"],
+    install_requires=[
+        "boto3", "boto3-stubs[ecs,iam,ssm,sts]", "click", "colorama"
+    ],
     extras_require={
         "test": ["pytest", "pytest-cov"],
         "dev": ["mypy", "black", "isort"],

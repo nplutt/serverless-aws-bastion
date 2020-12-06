@@ -21,26 +21,26 @@ def create_deregister_ssm_policy() -> str:
     """
     client: IAMClient = fetch_boto3_client("iam")
     try:
-        click.secho(f"Creating {SSM_DEREGISTER_POLICY_NAME} policy", fg="green")
+        click.secho(f"Creating {SSM_DEREGISTER_POLICY_NAME} policy",
+                    fg="green")
         response = client.create_policy(
             Description="Used by serverless-aws-bastion ECS task to "
             "deregister itself from SSM",
             PolicyName=SSM_DEREGISTER_POLICY_NAME,
-            PolicyDocument=json.dumps(
-                {
-                    "Version": "2012-10-17",
-                    "Statement": [
-                        {
-                            "Action": [
-                                "ssm:DeregisterManagedInstance",
-                                "ssm:DescribeInstanceInformation",
-                            ],
-                            "Effect": "Allow",
-                            "Resource": "*",
-                        }
+            PolicyDocument=json.dumps({
+                "Version":
+                "2012-10-17",
+                "Statement": [{
+                    "Action": [
+                        "ssm:DeregisterManagedInstance",
+                        "ssm:DescribeInstanceInformation",
                     ],
-                }
-            ),
+                    "Effect":
+                    "Allow",
+                    "Resource":
+                    "*",
+                }],
+            }),
         )
         return response["Policy"]["Arn"]
     except client.exceptions.EntityAlreadyExistsException:
@@ -65,21 +65,19 @@ def create_bastion_task_role() -> str:
     response = client.create_role(
         RoleName=TASK_ROLE_NAME,
         Description="Used by serverless-aws-bastion ECS tasks",
-        AssumeRolePolicyDocument=json.dumps(
-            {
-                "Version": "2012-10-17",
-                "Statement": [
-                    {
-                        "Sid": "",
-                        "Effect": "Allow",
-                        "Principal": {
-                            "Service": ["ecs-tasks.amazonaws.com", "ssm.amazonaws.com"]
-                        },
-                        "Action": "sts:AssumeRole",
-                    }
-                ],
-            }
-        ),
+        AssumeRolePolicyDocument=json.dumps({
+            "Version":
+            "2012-10-17",
+            "Statement": [{
+                "Sid": "",
+                "Effect": "Allow",
+                "Principal": {
+                    "Service":
+                    ["ecs-tasks.amazonaws.com", "ssm.amazonaws.com"]
+                },
+                "Action": "sts:AssumeRole",
+            }],
+        }),
         Tags=get_default_tags("iam"),
     )
 
@@ -111,20 +109,20 @@ def create_bastion_task_execution_role() -> str:
     click.secho(f"Creating {TASK_EXECUTION_ROLE_NAME} role", fg="green")
     response = client.create_role(
         RoleName=TASK_EXECUTION_ROLE_NAME,
-        Description="Used by Fargate to launch serverless-aws-bastion ECS tasks",
-        AssumeRolePolicyDocument=json.dumps(
-            {
-                "Version": "2012-10-17",
-                "Statement": [
-                    {
-                        "Sid": "",
-                        "Effect": "Allow",
-                        "Principal": {"Service": ["ecs-tasks.amazonaws.com"]},
-                        "Action": "sts:AssumeRole",
-                    }
-                ],
-            }
-        ),
+        Description=
+        "Used by Fargate to launch serverless-aws-bastion ECS tasks",
+        AssumeRolePolicyDocument=json.dumps({
+            "Version":
+            "2012-10-17",
+            "Statement": [{
+                "Sid": "",
+                "Effect": "Allow",
+                "Principal": {
+                    "Service": ["ecs-tasks.amazonaws.com"]
+                },
+                "Action": "sts:AssumeRole",
+            }],
+        }),
         Tags=get_default_tags("iam"),
     )
     attach_policies_to_role(

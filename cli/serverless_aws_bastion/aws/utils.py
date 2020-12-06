@@ -8,7 +8,6 @@ import click
 from botocore.config import Config
 from mypy_boto3_sts.client import STSClient
 
-
 CLIENT_CACHE: Dict[str, Any] = {}
 
 
@@ -26,7 +25,10 @@ def fetch_boto3_client(service_name: str):
     config = Config(
         region_name=region_name,
         signature_version="v4",
-        retries={"max_attempts": 10, "mode": "standard"},
+        retries={
+            "max_attempts": 10,
+            "mode": "standard"
+        },
     )
     client = boto3.client(service_name, config=config)  # type: ignore
 
@@ -40,9 +42,8 @@ def load_aws_region_name() -> str:
     Uses boto3 to load the current region set in the aws cli config
     """
     session = boto3.session.Session()
-    region_name = (
-        click.get_current_context().params.get("region") or session.region_name
-    )
+    region_name = (click.get_current_context().params.get("region")
+                   or session.region_name)
     return region_name
 
 
@@ -60,10 +61,7 @@ def get_default_tags(service: str) -> List[Any]:
         "CreatedOn": str(datetime.utcnow()),
     }
     capitalize = service in ("iam", "ssm")
-    return [
-        {
-            f"{'K' if capitalize else 'k'}ey": key,
-            f"{'V' if capitalize else 'v'}alue": value,
-        }
-        for key, value in tags.items()
-    ]
+    return [{
+        f"{'K' if capitalize else 'k'}ey": key,
+        f"{'V' if capitalize else 'v'}alue": value,
+    } for key, value in tags.items()]
