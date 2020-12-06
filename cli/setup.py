@@ -9,8 +9,7 @@ setup(
     author_email="nplutt@gmail.com",
     license="MIT",
     url="https://github.com/nplutt/serverless-aws-bastion",
-    project_urls={
-        "Source Code": "https://github.com/nplutt/serverless-aws-bastion/"},
+    project_urls={"Source Code": "https://github.com/nplutt/serverless-aws-bastion/"},
     keywords="serverless aws bastion jump server python ssh",
     classifiers=[
         "Intended Audience :: Developers",
@@ -29,8 +28,7 @@ setup(
             "serverless-aws-bastion =  serverless_aws_bastion.cli:main",
         ],
     },
-    install_requires=[
-        "boto3", "boto3-stubs[ecs,iam,ssm,sts]", "click", "colorama"],
+    install_requires=["boto3", "boto3-stubs[ecs,iam,ssm,sts]", "click", "colorama"],
     extras_require={
         "test": ["pytest", "pytest-cov"],
         "dev": ["mypy", "black", "isort"],

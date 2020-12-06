@@ -154,8 +154,7 @@ def launch_fargate_task(
                     "name": DEFAULT_NAME,
                     "environment": [
                         {"name": "AUTHORIZED_SSH_KEYS", "value": authorized_keys},
-                        {"name": "ACTIVATION_ID",
-                            "value": activation["ActivationId"]},
+                        {"name": "ACTIVATION_ID", "value": activation["ActivationId"]},
                         {
                             "name": "ACTIVATION_CODE",
                             "value": activation["ActivationCode"],

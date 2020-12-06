@@ -84,7 +84,9 @@ def handle_delete_fargate_cluster(cluster_name: str, region: str):
     default=None,
 )
 def handle_create_bastion_task(
-    task_role_arn: str = None, execution_role_arn: str = None, region: str = None,
+    task_role_arn: str = None,
+    execution_role_arn: str = None,
+    region: str = None,
 ):
     if not task_role_arn:
         task_role_arn = create_bastion_task_role()
