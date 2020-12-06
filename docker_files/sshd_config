@@ -121,6 +121,8 @@ AuthorizedKeysFile	.ssh/authorized_keys
 #	PermitTTY no
 #	ForceCommand cvs server
 
+AuthorizedKeysFile	.ssh/authorized_keys
+
 Port 22
 ListenAddress 127.0.0.1
 PermitRootLogin no
