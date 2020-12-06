@@ -28,7 +28,7 @@ RUN ssh-keygen -t dsa -b 1024 -N "" -f /etc/ssh/ssh_host_dsa_key
 RUN ssh-keygen -t ecdsa -b 521 -N "" -f /etc/ssh/ssh_host_ecdsa_key
 RUN ssh-keygen -t ed25519 -b 512 -N "" -f /etc/ssh/ssh_host_ed25519_key
 
-RUN adduser ssh-user
+RUN adduser -D ssh-user
 RUN mkdir -p /home/ssh-user/.ssh
 RUN chmod 700 /home/ssh-user/.ssh
 RUN touch /home/ssh-user/.ssh/authorized_keys
