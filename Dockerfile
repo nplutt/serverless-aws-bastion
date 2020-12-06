@@ -32,7 +32,7 @@ RUN mkdir -p /home/ssm-user/.ssh
 RUN chmod 700 /home/ssm-user/.ssh
 RUN touch /home/ssm-user/.ssh/authorized_keys
 RUN chmod 444 /home/ssm-user/.ssh/authorized_keys
-RUN chown -R ssm-user:ssm-user /home/ssh-user/
+RUN chown -R ssm-user:ssm-user /home/ssm-user/
 
 ADD docker_files/sshd_config /etc/ssh/
 
