@@ -3,16 +3,16 @@
 set -e
 
 cleanup() {
-    INSTANCE_ID=$(
-        sudo grep 'Successfully registered the instance with AWS SSM using Managed instance-id:' /var/log/amazon/ssm/amazon-ssm-agent.log \
-        | awk '{print $NF}'
-    )
-    aws ssm deregister-managed-instance --instance-id "$INSTANCE_ID" --region "$AWS_REGION"
+  INSTANCE_ID=$(
+    sudo grep 'Successfully registered the instance with AWS SSM using Managed instance-id:' /var/log/amazon/ssm/amazon-ssm-agent.log |
+      awk '{print $NF}'
+  )
+  aws ssm deregister-managed-instance --instance-id "$INSTANCE_ID" --region "$AWS_REGION"
 }
 trap cleanup EXIT SIGTERM SIGKILL
 
 echo "Adding ssh key to authorized keys..."
-echo "$AUTHORIZED_SSH_KEYS" >> /home/ssm-user/.ssh/authorized_keys
+echo "$AUTHORIZED_SSH_KEYS" >>/home/ssm-user/.ssh/authorized_keys
 
 echo "Starting ssh..."
 /usr/sbin/sshd -Dd -e4 -f /etc/ssh/sshd_config &
