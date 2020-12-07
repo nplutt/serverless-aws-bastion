@@ -129,9 +129,9 @@ def handle_create_bastion_task(
 )
 @click.option(
     "--bastion-timeout",
-    help="How long the bastion should live for, specified in seconds. "
-    "To have the server live forever set to `infinity`.",
-    type=click.INT,
+    help="How many minutes that the bastion should stay alive for. "
+    "Default is 8 hours, to have the server live forever set to `infinity`.",
+    type=click.STRING,
     default=TASK_TIMEOUT,
 )
 @click.option(
@@ -153,7 +153,7 @@ def handle_launch_bastion(
         subnet_ids=subnet_ids,
         security_group_ids=security_group_ids,
         authorized_keys=authorized_keys,
-        timeout=bastion_timeout,
+        timeout_minutes=bastion_timeout,
     )
     click.secho("Task is running", fg="green")
 

@@ -135,7 +135,7 @@ def launch_fargate_task(
     subnet_ids: str,
     security_group_ids: str,
     authorized_keys: str,
-    timeout: int,
+    timeout_minutes: int,
 ) -> RunTaskResponseTypeDef:
     """
     Launches the ssh bastion Fargate task into the proper subnets & security groups,
@@ -161,7 +161,7 @@ def launch_fargate_task(
                             "value": activation["ActivationCode"],
                         },
                         {"name": "AWS_REGION", "value": load_aws_region_name()},
-                        {"name": "TIMEOUT", "value": str(timeout)},
+                        {"name": "TIMEOUT", "value": str(timeout_minutes * 60)},
                     ],
                 }
             ]

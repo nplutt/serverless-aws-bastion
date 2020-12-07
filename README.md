@@ -11,7 +11,7 @@ python setup.py develop
 - [x] CLI for creating bastion stack (cluster, task, iam)
 - [ ] CLI to destroy bastion stack (cluster, task, iam)
 - [x] SSH functionality via SSM
-- [ ] Task timeout functionality
+- [x] Task timeout functionality
 - [ ] CLI for machine cleanup on SSM side
 - [ ] CLI to create security group to launch task into
 - [ ] Scripts to allow SSM SSH into Fargate task

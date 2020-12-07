@@ -5,7 +5,7 @@ from mypy_boto3_ecs.type_defs import ContainerDefinitionTypeDef
 
 TASK_BOOT_TIMEOUT = 100
 CLUSTER_PROVISION_TIMEOUT = 60
-TASK_TIMEOUT = 60 * 60 * 8
+TASK_TIMEOUT = 60 * 8
 
 DEFAULT_NAME = "serverless-aws-bastion"
 TASK_ROLE_NAME = f"{DEFAULT_NAME}-task-role"
