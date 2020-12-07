@@ -5,8 +5,8 @@ import click
 from mypy_boto3_iam.client import IAMClient
 
 from serverless_aws_bastion.aws.utils import (
-    fetch_boto3_client,
     build_tags,
+    fetch_boto3_client,
     load_aws_account_id,
 )
 from serverless_aws_bastion.config import (

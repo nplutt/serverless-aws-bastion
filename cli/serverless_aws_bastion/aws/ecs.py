@@ -13,8 +13,8 @@ from mypy_boto3_ecs.type_defs import (
 
 from serverless_aws_bastion.aws.ssm import create_activation
 from serverless_aws_bastion.aws.utils import (
-    fetch_boto3_client,
     build_tags,
+    fetch_boto3_client,
     load_aws_region_name,
 )
 from serverless_aws_bastion.config import (
