@@ -7,7 +7,7 @@ from mypy_boto3_ssm.type_defs import (
     InstanceInformationStringFilterTypeDef,
 )
 
-from serverless_aws_bastion.aws.utils import fetch_boto3_client, get_tags
+from serverless_aws_bastion.aws.utils import fetch_boto3_client, build_tags
 from serverless_aws_bastion.config import DEFAULT_NAME
 
 
@@ -27,7 +27,7 @@ def create_activation(
         IamRole=iam_role_name,
         RegistrationLimit=1,
         ExpirationDate=datetime.utcnow() + timedelta(minutes=5),
-        Tags=get_tags("ssm", {"Name": instance_name}),
+        Tags=build_tags("ssm", {"Name": instance_name}),
     )
     return response
 

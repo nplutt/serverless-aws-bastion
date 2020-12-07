@@ -14,7 +14,7 @@ from mypy_boto3_ecs.type_defs import (
 from serverless_aws_bastion.aws.ssm import create_activation
 from serverless_aws_bastion.aws.utils import (
     fetch_boto3_client,
-    get_tags,
+    build_tags,
     load_aws_region_name,
 )
 from serverless_aws_bastion.config import (
@@ -39,7 +39,7 @@ def create_fargate_cluster(cluster_name: str) -> CreateClusterResponseTypeDef:
     response = client.create_cluster(
         clusterName=cluster_name,
         capacityProviders=["FARGATE"],
-        tags=get_tags("ecs"),
+        tags=build_tags("ecs"),
     )
     wait_for_fargate_cluster_status(cluster_name, ClusterStatus.ACTIVE)
     return response
@@ -126,7 +126,7 @@ def create_task_definition(task_role_arn: str, execution_role_arn: str):
                 },
             },
         ],
-        tags=get_tags("ecs"),
+        tags=build_tags("ecs"),
     )
 
 
@@ -176,7 +176,7 @@ def launch_fargate_task(
                 "assignPublicIp": "ENABLED",
             }
         },
-        tags=get_tags("ecs", {"Name": f"{DEFAULT_NAME}/{instance_name}"}),
+        tags=build_tags("ecs", {"Name": f"{DEFAULT_NAME}/{instance_name}"}),
     )
 
     wait_for_tasks_to_start(cluster_name, response["tasks"])
