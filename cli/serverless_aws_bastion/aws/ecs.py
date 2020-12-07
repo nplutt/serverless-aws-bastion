@@ -14,7 +14,7 @@ from mypy_boto3_ecs.type_defs import (
 from serverless_aws_bastion.aws.ssm import create_activation
 from serverless_aws_bastion.aws.utils import (
     fetch_boto3_client,
-    get_default_tags,
+    get_tags,
     load_aws_region_name,
 )
 from serverless_aws_bastion.config import (
@@ -39,7 +39,7 @@ def create_fargate_cluster(cluster_name: str) -> CreateClusterResponseTypeDef:
     response = client.create_cluster(
         clusterName=cluster_name,
         capacityProviders=["FARGATE"],
-        tags=get_default_tags("ecs"),
+        tags=get_tags("ecs"),
     )
     wait_for_fargate_cluster_status(cluster_name, ClusterStatus.ACTIVE)
     return response
@@ -126,7 +126,7 @@ def create_task_definition(task_role_arn: str, execution_role_arn: str):
                 },
             },
         ],
-        tags=get_default_tags("ecs"),
+        tags=get_tags("ecs"),
     )
 
 
@@ -135,6 +135,7 @@ def launch_fargate_task(
     subnet_ids: str,
     security_group_ids: str,
     authorized_keys: str,
+    instance_name: str,
     timeout_minutes: int,
 ) -> RunTaskResponseTypeDef:
     """
@@ -143,7 +144,7 @@ def launch_fargate_task(
     """
     client: ECSClient = fetch_boto3_client("ecs")
 
-    activation = create_activation(TASK_ROLE_NAME)
+    activation = create_activation(TASK_ROLE_NAME, instance_name)
 
     click.secho("Starting bastion task", fg="green")
     response = client.run_task(
@@ -175,7 +176,7 @@ def launch_fargate_task(
                 "assignPublicIp": "ENABLED",
             }
         },
-        tags=get_default_tags("ecs"),
+        tags=get_tags("ecs", {"Name": f"{DEFAULT_NAME}/{instance_name}"}),
     )
 
     wait_for_tasks_to_start(cluster_name, response["tasks"])

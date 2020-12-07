@@ -10,6 +10,7 @@ from serverless_aws_bastion.aws.iam import (
     create_bastion_task_execution_role,
     create_bastion_task_role,
 )
+from serverless_aws_bastion.aws.ssm import load_instance_ids
 from serverless_aws_bastion.config import TASK_TIMEOUT
 
 
@@ -128,10 +129,16 @@ def handle_create_bastion_task(
     type=click.STRING,
 )
 @click.option(
-    "--bastion-timeout",
-    help="How many minutes that the bastion should stay alive for. "
-    "Default is 8 hours, to have the server live forever set to `infinity`.",
+    "--bastion-name",
+    help="A unique name for the bastion instance",
+    required=True,
     type=click.STRING,
+)
+@click.option(
+    "--bastion-timeout",
+    help="How many minutes that the bastion should stay alive for, "
+    "the default is 8 hours",
+    type=click.INT,
     default=TASK_TIMEOUT,
 )
 @click.option(
@@ -145,6 +152,7 @@ def handle_launch_bastion(
     subnet_ids: str,
     security_group_ids: str,
     authorized_keys: str,
+    bastion_name: str,
     bastion_timeout: int,
     region: str,
 ) -> None:
@@ -153,9 +161,33 @@ def handle_launch_bastion(
         subnet_ids=subnet_ids,
         security_group_ids=security_group_ids,
         authorized_keys=authorized_keys,
+        instance_name=bastion_name,
         timeout_minutes=bastion_timeout,
     )
-    click.secho("Task is running", fg="green")
+    click.secho("Bastion task is running", fg="green")
+
+    instances = load_instance_ids(bastion_name)
+    click.secho(f"Instance id(s): {', '.join(instances)}", fg="green")
+
+
+@cli.command(
+    "list-bastion-instances",
+    help="Starts up a serverless bastion in your Fargate cluster",
+)
+@click.option(
+    "--name",
+    help="The name bastion instance to filter by",
+    type=click.STRING,
+)
+@click.option(
+    "--region",
+    help="The aws region where the bastion instance can be found",
+    type=click.STRING,
+    default=None,
+)
+def handle_list_bastion_instances(name: str, region: str) -> None:
+    instances = load_instance_ids(name)
+    click.secho(f"Instance ids: {', '.join(instances)}", fg="green")
 
 
 def main() -> None:

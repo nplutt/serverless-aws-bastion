@@ -6,7 +6,7 @@ from mypy_boto3_iam.client import IAMClient
 
 from serverless_aws_bastion.aws.utils import (
     fetch_boto3_client,
-    get_default_tags,
+    get_tags,
     load_aws_account_id,
 )
 from serverless_aws_bastion.config import (
@@ -84,7 +84,7 @@ def create_bastion_task_role() -> str:
                 ],
             }
         ),
-        Tags=get_default_tags("iam"),
+        Tags=get_tags("iam"),
     )
 
     deregister_ssm_arn = create_deregister_ssm_policy()
@@ -129,7 +129,7 @@ def create_bastion_task_execution_role() -> str:
                 ],
             }
         ),
-        Tags=get_default_tags("iam"),
+        Tags=get_tags("iam"),
     )
     attach_policies_to_role(
         TASK_EXECUTION_ROLE_NAME,

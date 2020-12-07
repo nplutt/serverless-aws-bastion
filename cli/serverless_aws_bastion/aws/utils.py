@@ -52,11 +52,14 @@ def load_aws_account_id() -> str:
     return client.get_caller_identity()["Account"]
 
 
-def get_default_tags(service: str) -> List[Any]:
+def get_tags(service: str, extra_tags: dict = None) -> List[Any]:
     tags = {
         "CreatedBy": "serverless-aws-bastion:cli",
         "CreatedOn": str(datetime.utcnow()),
     }
+    if extra_tags:
+        tags.update(extra_tags)
+
     capitalize = service in ("iam", "ssm")
     return [
         {
