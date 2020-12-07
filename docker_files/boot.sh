@@ -22,9 +22,7 @@ echo "Registering & starting ssm..."
 /usr/bin/amazon-ssm-agent &
 
 echo "Running bastion server for ${TIMEOUT} seconds..."
-while true; do
-  sleep ${TIMEOUT}
-done
+sleep ${TIMEOUT}
 
 echo "Shutting down server..."
 exit 0

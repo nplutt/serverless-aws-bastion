@@ -14,10 +14,3 @@ SSM_DEREGISTER_POLICY_NAME = f"{DEFAULT_NAME}-deregister-ssm"
 
 TASK_CPU = "256"
 TASK_MEMORY = "512"
-TASK_DEFINITION: List[ContainerDefinitionTypeDef] = [
-    {
-        "image": "nplutt/ssm-bastion",
-        "name": DEFAULT_NAME,
-        "essential": True,
-    }
-]

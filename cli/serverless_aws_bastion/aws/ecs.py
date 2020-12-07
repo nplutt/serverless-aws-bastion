@@ -160,7 +160,7 @@ def launch_fargate_task(
                             "value": activation["ActivationCode"],
                         },
                         {"name": "AWS_REGION", "value": load_aws_region_name()},
-                        {"name": "TIMEOUT", "value": TASK_TIMEOUT},
+                        {"name": "TIMEOUT", "value": str(TASK_TIMEOUT)},
                     ],
                 }
             ]
