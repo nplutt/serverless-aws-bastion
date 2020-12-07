@@ -2,7 +2,7 @@ name: Docker Build
 
 on:
   push:
-    branches: version-0.1.0-part-2
+    branches: master
 
 jobs:
   main:
