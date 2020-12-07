@@ -22,7 +22,7 @@ from serverless_aws_bastion.config import (
     DEFAULT_NAME,
     TASK_BOOT_TIMEOUT,
     TASK_CPU,
-    TASK_DEFINITION,
+    TASK_TIMEOUT,
     TASK_MEMORY,
     TASK_ROLE_NAME,
 )
@@ -160,6 +160,7 @@ def launch_fargate_task(
                             "value": activation["ActivationCode"],
                         },
                         {"name": "AWS_REGION", "value": load_aws_region_name()},
+                        {"name": "TIMEOUT", "value": TASK_TIMEOUT},
                     ],
                 }
             ]

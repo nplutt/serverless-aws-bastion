@@ -19,4 +19,12 @@ echo "Starting ssh..."
 
 echo "Registering & starting ssm..."
 /usr/bin/amazon-ssm-agent -register -code ${ACTIVATION_CODE} -id ${ACTIVATION_ID} -region ${AWS_REGION} -clear -y
-/usr/bin/amazon-ssm-agent
+/usr/bin/amazon-ssm-agent &
+
+echo "Running bastion server for ${TIMEOUT} seconds..."
+while true; do
+  sleep ${TIMEOUT}
+done
+
+echo "Shutting down server..."
+exit 0
