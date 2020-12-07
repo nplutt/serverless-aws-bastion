@@ -22,9 +22,9 @@ from serverless_aws_bastion.config import (
     DEFAULT_NAME,
     TASK_BOOT_TIMEOUT,
     TASK_CPU,
-    TASK_DEFINITION,
     TASK_MEMORY,
     TASK_ROLE_NAME,
+    TASK_TIMEOUT,
 )
 from serverless_aws_bastion.enums.cluster_status import ClusterStatus
 
@@ -135,6 +135,7 @@ def launch_fargate_task(
     subnet_ids: str,
     security_group_ids: str,
     authorized_keys: str,
+    timeout_minutes: int,
 ) -> RunTaskResponseTypeDef:
     """
     Launches the ssh bastion Fargate task into the proper subnets & security groups,
@@ -160,6 +161,7 @@ def launch_fargate_task(
                             "value": activation["ActivationCode"],
                         },
                         {"name": "AWS_REGION", "value": load_aws_region_name()},
+                        {"name": "TIMEOUT", "value": str(timeout_minutes * 60)},
                     ],
                 }
             ]

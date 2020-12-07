@@ -10,6 +10,7 @@ from serverless_aws_bastion.aws.iam import (
     create_bastion_task_execution_role,
     create_bastion_task_role,
 )
+from serverless_aws_bastion.config import TASK_TIMEOUT
 
 
 @click.group()
@@ -127,6 +128,13 @@ def handle_create_bastion_task(
     type=click.STRING,
 )
 @click.option(
+    "--bastion-timeout",
+    help="How many minutes that the bastion should stay alive for. "
+    "Default is 8 hours, to have the server live forever set to `infinity`.",
+    type=click.STRING,
+    default=TASK_TIMEOUT,
+)
+@click.option(
     "--region",
     help="The aws region where the Fargate task should be started",
     type=click.STRING,
@@ -137,6 +145,7 @@ def handle_launch_bastion(
     subnet_ids: str,
     security_group_ids: str,
     authorized_keys: str,
+    bastion_timeout: int,
     region: str,
 ) -> None:
     launch_fargate_task(
@@ -144,6 +153,7 @@ def handle_launch_bastion(
         subnet_ids=subnet_ids,
         security_group_ids=security_group_ids,
         authorized_keys=authorized_keys,
+        timeout_minutes=bastion_timeout,
     )
     click.secho("Task is running", fg="green")
 
