@@ -21,7 +21,7 @@ COPY --from=builder /go/src/github.com/amazon-ssm-agent/bin/linux_amd64/ /usr/bi
 COPY --from=builder /go/src/github.com/amazon-ssm-agent/bin/amazon-ssm-agent.json.template /etc/amazon/ssm/amazon-ssm-agent.json
 COPY --from=builder /go/src/github.com/amazon-ssm-agent/bin/seelog_unix.xml /etc/amazon/ssm/seelog.xml
 
-RUN apk add --no-cache openssh autossh
+RUN apk add --no-cache openssh autossh openssh-server-pam
 
 RUN ssh-keygen -t rsa -b 1024 -N "" -f /etc/ssh/ssh_host_rsa_key
 RUN ssh-keygen -t dsa -b 1024 -N "" -f /etc/ssh/ssh_host_dsa_key
@@ -29,6 +29,7 @@ RUN ssh-keygen -t ecdsa -b 521 -N "" -f /etc/ssh/ssh_host_ecdsa_key
 RUN ssh-keygen -t ed25519 -b 512 -N "" -f /etc/ssh/ssh_host_ed25519_key
 
 RUN adduser -D ssh-user
+RUN passwd -u ssh-user
 RUN mkdir -p /home/ssh-user/.ssh
 RUN chmod 700 /home/ssh-user/.ssh
 RUN touch /home/ssh-user/.ssh/authorized_keys
