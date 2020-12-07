@@ -37,6 +37,7 @@ RUN chmod 444 /home/ssh-user/.ssh/authorized_keys
 RUN chown -R ssh-user:ssh-user /home/ssh-user/
 
 ADD docker_files/sshd_config /etc/ssh/
+RUN echo "Welcome to the serverless bastion!" > /etc/motd
 
 RUN apk add --no-cache python3 py3-pip bash dumb-init
 RUN pip3 install --upgrade pip

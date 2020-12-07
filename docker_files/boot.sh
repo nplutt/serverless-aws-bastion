@@ -15,7 +15,7 @@ echo "Adding ssh key to authorized keys..."
 echo ${AUTHORIZED_SSH_KEYS} >> /home/ssh-user/.ssh/authorized_keys
 
 echo "Starting ssh..."
-/usr/sbin/sshd -Dd -e4 -f /etc/ssh/sshd_config &
+/usr/sbin/sshd -f /etc/ssh/sshd_config &
 
 echo "Registering & starting ssm..."
 /usr/bin/amazon-ssm-agent -register -code ${ACTIVATION_CODE} -id ${ACTIVATION_ID} -region ${AWS_REGION} -clear -y
