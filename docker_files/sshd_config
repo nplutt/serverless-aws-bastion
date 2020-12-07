@@ -1,0 +1,11 @@
+AuthorizedKeysFile .ssh/authorized_keys
+
+Port 22
+ListenAddress 127.0.0.1
+
+PermitRootLogin no
+StrictModes yes
+UsePAM yes
+PubkeyAuthentication yes
+PasswordAuthentication no
+ChallengeResponseAuthentication no

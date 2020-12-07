@@ -24,7 +24,7 @@ runs:
     shell: bash
     run: |
       cd ${{ inputs.package-path }}
-      pytest -v -p no:warnings --cov=src --cov-report=xml  tests
+      pytest -v -p no:warnings --cov=serverless_aws_bastion --cov-report=xml  tests
   - name: Upload coverage to Codecov
     shell: bash
     run: |

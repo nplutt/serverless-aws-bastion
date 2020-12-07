@@ -111,7 +111,21 @@ def create_task_definition(task_role_arn: str, execution_role_arn: str):
         memory=TASK_MEMORY,
         taskRoleArn=task_role_arn,
         executionRoleArn=execution_role_arn,
-        containerDefinitions=TASK_DEFINITION,
+        containerDefinitions=[
+            {
+                "image": f"nplutt/{DEFAULT_NAME}",
+                "name": DEFAULT_NAME,
+                "essential": True,
+                "logConfiguration": {
+                    "logDriver": "awslogs",
+                    "options": {
+                        "awslogs-group": "/ecs/ssh-bastion",
+                        "awslogs-region": "us-west-2",
+                        "awslogs-stream-prefix": "ecs",
+                    },
+                },
+            },
+        ],
         tags=get_default_tags("ecs"),
     )
 
