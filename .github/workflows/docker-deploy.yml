@@ -2,7 +2,7 @@ name: Docker Build
 
 on:
   push:
-    branches: feature/bastion-timeout
+    branches: master
 
 jobs:
   main:
