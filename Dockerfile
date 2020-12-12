@@ -1,4 +1,4 @@
-FROM golang:1.12-alpine as builder
+FROM golang:1.13-alpine as builder
 ARG VERSION=3.0.431.0
 
 RUN set -ex && apk add --no-cache make git gcc libc-dev curl bash && \
