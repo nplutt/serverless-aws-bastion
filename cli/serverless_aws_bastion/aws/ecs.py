@@ -1,7 +1,6 @@
 from time import sleep
 from typing import List
 
-import click
 from mypy_boto3_ecs.client import ECSClient
 from mypy_boto3_ecs.type_defs import (
     CreateClusterResponseTypeDef,
@@ -12,7 +11,7 @@ from mypy_boto3_ecs.type_defs import (
 )
 
 from serverless_aws_bastion.aws.ssm import create_activation
-from serverless_aws_bastion.aws.utils import (
+from serverless_aws_bastion.utils.aws_utils import (
     build_tags,
     fetch_boto3_client,
     load_aws_region_name,
@@ -20,13 +19,15 @@ from serverless_aws_bastion.aws.utils import (
 from serverless_aws_bastion.config import (
     CLUSTER_PROVISION_TIMEOUT,
     DEFAULT_NAME,
+    TASK_NAMES,
     TASK_BOOT_TIMEOUT,
     TASK_CPU,
     TASK_MEMORY,
     TASK_ROLE_NAME,
-    TASK_TIMEOUT,
 )
+from serverless_aws_bastion.utils.click_utils import log_info, log_error
 from serverless_aws_bastion.enums.cluster_status import ClusterStatus
+from serverless_aws_bastion.enums.bastion_type import BastionType
 
 
 def create_fargate_cluster(cluster_name: str) -> CreateClusterResponseTypeDef:
@@ -35,7 +36,7 @@ def create_fargate_cluster(cluster_name: str) -> CreateClusterResponseTypeDef:
     """
     client: ECSClient = fetch_boto3_client("ecs")
 
-    click.secho("Creating Fargate cluster", fg="green")
+    log_info("Creating Fargate cluster")
     response = client.create_cluster(
         clusterName=cluster_name,
         capacityProviders=["FARGATE"],
@@ -51,7 +52,7 @@ def delete_fargate_cluster(cluster_name: str) -> None:
     """
     client: ECSClient = fetch_boto3_client("ecs")
 
-    click.secho("Deleting Fargate cluster", fg="green")
+    log_info("Deleting Fargate cluster")
     client.delete_cluster(cluster=cluster_name)
     wait_for_fargate_cluster_status(cluster_name, ClusterStatus.INACTIVE)
 
@@ -76,9 +77,7 @@ def wait_for_fargate_cluster_status(
     cluster_provisioned = False
     wait_time = 0
 
-    click.secho(
-        f"Waiting for cluster to reach {cluster_stats.value} state...", fg="green"
-    )
+    log_info(f"Waiting for cluster to reach {cluster_stats.value} state...")
     while not cluster_provisioned and wait_time < timeout_seconds:
         cluster_info = describe_fargate_cluster(cluster_name)
 
@@ -93,19 +92,24 @@ def wait_for_fargate_cluster_status(
         wait_time += 2
 
     if not cluster_provisioned:
-        click.secho("Cluster failed to provision", err=True)
+        log_error("Cluster failed to provision")
 
 
-def create_task_definition(task_role_arn: str, execution_role_arn: str):
+def create_task_definition(bastion_type: BastionType, task_role_arn: str, execution_role_arn: str):
     """
     Creates the task definition that will be used to launch the
     serverless bastion container
     """
     client: ECSClient = fetch_boto3_client("ecs")
+    port_mappings = [{
+        "hostPort": 22,
+        "protocol": "tcp",
+        "containerPort": 22,
+    }] if bastion_type == BastionType.original else []
 
-    click.secho("Creating bastion ECS task", fg="green")
+    log_info("Creating bastion ECS task")
     client.register_task_definition(
-        family=DEFAULT_NAME,
+        family=TASK_NAMES[bastion_type],
         networkMode="awsvpc",
         cpu=TASK_CPU,
         memory=TASK_MEMORY,
@@ -114,13 +118,9 @@ def create_task_definition(task_role_arn: str, execution_role_arn: str):
         containerDefinitions=[
             {
                 "image": f"nplutt/{DEFAULT_NAME}",
-                "name": DEFAULT_NAME,
+                "name": TASK_NAMES[bastion_type],
                 "essential": True,
-                "portMappings": [{
-                    "hostPort": 22,
-                    "protocol": "tcp",
-                    "containerPort": 22,
-                }],
+                "portMappings": port_mappings,
                 "logConfiguration": {
                     "logDriver": "awslogs",
                     "options": {
@@ -151,7 +151,7 @@ def launch_fargate_task(
 
     activation = create_activation(TASK_ROLE_NAME, instance_name)
 
-    click.secho("Starting bastion task", fg="green")
+    log_info("Starting bastion task")
     response = client.run_task(
         cluster=cluster_name,
         taskDefinition=DEFAULT_NAME,
@@ -218,7 +218,7 @@ def wait_for_tasks_to_start(
     tasks_started = False
     wait_time = 0
 
-    click.secho("Waiting for bastion task to start...", fg="green")
+    log_info("Waiting for bastion task to start...")
     while not tasks_started and wait_time < timeout_seconds:
         task_info = describe_task(cluster_name, task_arns)
 
@@ -233,4 +233,4 @@ def wait_for_tasks_to_start(
         wait_time += 2
 
     if not tasks_started:
-        click.secho("Bastion task failed to start", err=True)
+        log_error("Bastion task failed to start")

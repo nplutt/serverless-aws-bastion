@@ -12,6 +12,8 @@ from serverless_aws_bastion.aws.iam import (
 )
 from serverless_aws_bastion.aws.ssm import load_instance_ids
 from serverless_aws_bastion.config import TASK_TIMEOUT
+from serverless_aws_bastion.enums.bastion_type import BastionType
+from serverless_aws_bastion.utils.click_utils import log_error, log_info
 
 
 @click.group()
@@ -37,7 +39,7 @@ def cli():
 )
 def handle_create_fargate_cluster(cluster_name: str, region: str):
     create_fargate_cluster(cluster_name)
-    click.secho("Fargate cluster running", fg="green")
+    log_info("Fargate cluster running")
 
 
 @cli.command(
@@ -58,12 +60,19 @@ def handle_create_fargate_cluster(cluster_name: str, region: str):
 )
 def handle_delete_fargate_cluster(cluster_name: str, region: str):
     delete_fargate_cluster(cluster_name)
-    click.secho("Fargate cluster deleted", fg="green")
+    log_info("Fargate cluster deleted")
 
 
 @cli.command(
     "create-bastion-task",
     help="Creates the ECS task used to launch the bastion",
+)
+@click.option(
+    '--bastion-type',
+    help='The type of bastion that this task should run, options are either'
+         '`original` or `ssm`',
+    type=click.STRING,
+    default=BastionType.ssm.value,
 )
 @click.option(
     "--task-role-arn",
@@ -86,18 +95,24 @@ def handle_delete_fargate_cluster(cluster_name: str, region: str):
     default=None,
 )
 def handle_create_bastion_task(
+    bastion_type: str,
     task_role_arn: str = None,
     execution_role_arn: str = None,
     region: str = None,
 ):
+    try:
+        bastion_type = BastionType[bastion_type]
+    except KeyError:
+        raise click.ClickException("bastion-type must be one of `original` or `ssm`")
+
     if not task_role_arn:
         task_role_arn = create_bastion_task_role()
 
     if not execution_role_arn:
         execution_role_arn = create_bastion_task_execution_role()
 
-    create_task_definition(task_role_arn, execution_role_arn)
-    click.secho("Bastion ECS task created", fg="green")
+    create_task_definition(bastion_type, task_role_arn, execution_role_arn)
+    log_info("Bastion ECS task created")
 
 
 @cli.command(
@@ -164,10 +179,10 @@ def handle_launch_bastion(
         instance_name=bastion_name,
         timeout_minutes=bastion_timeout,
     )
-    click.secho("Bastion task is running", fg="green")
+    log_info("Bastion task is running")
 
     instances = load_instance_ids(bastion_name)
-    click.secho(f"Instance id(s): {', '.join(instances)}", fg="green")
+    log_info(f"Instance id(s): {', '.join(instances)}")
 
 
 @cli.command(
@@ -187,7 +202,7 @@ def handle_launch_bastion(
 )
 def handle_list_bastion_instances(name: str, region: str) -> None:
     instances = load_instance_ids(name)
-    click.secho(f"Instance ids: {', '.join(instances)}", fg="green")
+    log_info(f"Instance ids: {', '.join(instances)}")
 
 
 def main() -> None:
