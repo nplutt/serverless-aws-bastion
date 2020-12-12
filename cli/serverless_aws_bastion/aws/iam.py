@@ -3,15 +3,15 @@ from typing import List, Optional
 
 from mypy_boto3_iam.client import IAMClient
 
-from serverless_aws_bastion.utils.aws_utils import (
-    build_tags,
-    fetch_boto3_client,
-    load_aws_account_id,
-)
 from serverless_aws_bastion.config import (
     SSM_DEREGISTER_POLICY_NAME,
     TASK_EXECUTION_ROLE_NAME,
     TASK_ROLE_NAME,
+)
+from serverless_aws_bastion.utils.aws_utils import (
+    build_tags,
+    fetch_boto3_client,
+    load_aws_account_id,
 )
 from serverless_aws_bastion.utils.click_utils import log_info
 

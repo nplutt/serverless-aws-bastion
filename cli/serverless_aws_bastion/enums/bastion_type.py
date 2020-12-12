@@ -2,5 +2,5 @@ from enum import Enum
 
 
 class BastionType(Enum):
-    original = 'original'
-    ssm = 'ssm'
+    original = "original"
+    ssm = "ssm"

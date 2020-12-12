@@ -1,33 +1,35 @@
 from time import sleep
 from typing import List
 
+from click import Abort
 from mypy_boto3_ecs.client import ECSClient
 from mypy_boto3_ecs.type_defs import (
     CreateClusterResponseTypeDef,
     DescribeClustersResponseTypeDef,
     DescribeTasksResponseTypeDef,
+    PortMappingTypeDef,
     RunTaskResponseTypeDef,
     TaskTypeDef,
 )
 
 from serverless_aws_bastion.aws.ssm import create_activation
+from serverless_aws_bastion.config import (
+    CLUSTER_PROVISION_TIMEOUT,
+    DEFAULT_NAME,
+    TASK_BOOT_TIMEOUT,
+    TASK_CPU,
+    TASK_MEMORY,
+    TASK_NAMES,
+    TASK_ROLE_NAME,
+)
+from serverless_aws_bastion.enums.bastion_type import BastionType
+from serverless_aws_bastion.enums.cluster_status import ClusterStatus
 from serverless_aws_bastion.utils.aws_utils import (
     build_tags,
     fetch_boto3_client,
     load_aws_region_name,
 )
-from serverless_aws_bastion.config import (
-    CLUSTER_PROVISION_TIMEOUT,
-    DEFAULT_NAME,
-    TASK_NAMES,
-    TASK_BOOT_TIMEOUT,
-    TASK_CPU,
-    TASK_MEMORY,
-    TASK_ROLE_NAME,
-)
-from serverless_aws_bastion.utils.click_utils import log_info, log_error
-from serverless_aws_bastion.enums.cluster_status import ClusterStatus
-from serverless_aws_bastion.enums.bastion_type import BastionType
+from serverless_aws_bastion.utils.click_utils import log_error, log_info
 
 
 def create_fargate_cluster(cluster_name: str) -> CreateClusterResponseTypeDef:
@@ -93,19 +95,28 @@ def wait_for_fargate_cluster_status(
 
     if not cluster_provisioned:
         log_error("Cluster failed to provision")
+        raise Abort()
 
 
-def create_task_definition(bastion_type: BastionType, task_role_arn: str, execution_role_arn: str):
+def create_task_definition(
+    bastion_type: BastionType, task_role_arn: str, execution_role_arn: str
+):
     """
     Creates the task definition that will be used to launch the
     serverless bastion container
     """
     client: ECSClient = fetch_boto3_client("ecs")
-    port_mappings = [{
-        "hostPort": 22,
-        "protocol": "tcp",
-        "containerPort": 22,
-    }] if bastion_type == BastionType.original else []
+    port_mappings: List[PortMappingTypeDef] = (
+        [
+            {
+                "hostPort": 22,
+                "protocol": "tcp",
+                "containerPort": 22,
+            }
+        ]
+        if bastion_type == BastionType.original
+        else []
+    )
 
     log_info("Creating bastion ECS task")
     client.register_task_definition(
@@ -234,3 +245,4 @@ def wait_for_tasks_to_start(
 
     if not tasks_started:
         log_error("Bastion task failed to start")
+        raise Abort()

@@ -7,8 +7,11 @@ from mypy_boto3_ssm.type_defs import (
     InstanceInformationStringFilterTypeDef,
 )
 
-from serverless_aws_bastion.utils.aws_utils import build_tags, fetch_boto3_client
 from serverless_aws_bastion.config import DEFAULT_NAME
+from serverless_aws_bastion.utils.aws_utils import (
+    build_tags,
+    fetch_boto3_client,
+)
 
 
 def create_activation(

@@ -7,8 +7,8 @@ TASK_TIMEOUT = 60 * 8
 
 DEFAULT_NAME = "serverless-aws-bastion"
 TASK_NAMES = {
-    BastionType.original: f'{DEFAULT_NAME}-original',
-    BastionType.ssm: f'{DEFAULT_NAME}-ssm'
+    BastionType.original: f"{DEFAULT_NAME}-original",
+    BastionType.ssm: f"{DEFAULT_NAME}-ssm",
 }
 TASK_ROLE_NAME = f"{DEFAULT_NAME}-task-role"
 TASK_EXECUTION_ROLE_NAME = f"{DEFAULT_NAME}-task-execution-role"

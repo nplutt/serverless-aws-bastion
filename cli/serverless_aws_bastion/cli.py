@@ -68,9 +68,9 @@ def handle_delete_fargate_cluster(cluster_name: str, region: str):
     help="Creates the ECS task used to launch the bastion",
 )
 @click.option(
-    '--bastion-type',
-    help='The type of bastion that this task should run, options are either'
-         '`original` or `ssm`',
+    "--bastion-type",
+    help="The type of bastion that this task should run, options are either"
+    "`original` or `ssm`",
     type=click.STRING,
     default=BastionType.ssm.value,
 )
