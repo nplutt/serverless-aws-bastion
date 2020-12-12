@@ -116,6 +116,11 @@ def create_task_definition(task_role_arn: str, execution_role_arn: str):
                 "image": f"nplutt/{DEFAULT_NAME}",
                 "name": DEFAULT_NAME,
                 "essential": True,
+                "portMappings": [{
+                    "hostPort": 22,
+                    "protocol": "tcp",
+                    "containerPort": 22,
+                }],
                 "logConfiguration": {
                     "logDriver": "awslogs",
                     "options": {
@@ -163,6 +168,7 @@ def launch_fargate_task(
                         },
                         {"name": "AWS_REGION", "value": load_aws_region_name()},
                         {"name": "TIMEOUT", "value": str(timeout_minutes * 60)},
+                        {"name": "BASTION_TYPE", "value": "ORIGINAL"},
                     ],
                 }
             ]

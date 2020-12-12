@@ -2,6 +2,7 @@ AuthorizedKeysFile .ssh/authorized_keys
 
 Port 22
 ListenAddress 127.0.0.1
+ListenAddress 0.0.0.0
 
 PermitRootLogin no
 StrictModes yes

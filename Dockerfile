@@ -1,5 +1,5 @@
 FROM golang:1.12-alpine as builder
-ARG VERSION=2.3.930.0
+ARG VERSION=3.0.431.0
 
 RUN set -ex && apk add --no-cache make git gcc libc-dev curl bash && \
     curl -sLO https://github.com/aws/amazon-ssm-agent/archive/${VERSION}.tar.gz && \
@@ -12,9 +12,9 @@ RUN set -ex && apk add --no-cache make git gcc libc-dev curl bash && \
     make build-linux
 
 FROM alpine
-RUN set -ex && apk add --no-cache sudo ca-certificates && \
-    adduser -D ssm-user && echo "ssm-user ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/ssm-agent-users && \
-    mkdir -p /etc/amazon/ssm
+RUN set -ex && apk add --no-cache sudo ca-certificates
+RUN adduser -D ssm-user && echo "ssm-user ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/ssm-agent-users
+RUN mkdir -p /etc/amazon/ssm
 
 
 COPY --from=builder /go/src/github.com/amazon-ssm-agent/bin/linux_amd64/ /usr/bin
