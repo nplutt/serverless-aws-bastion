@@ -52,6 +52,22 @@ def create_deregister_ssm_policy() -> str:
         return f"arn:aws:iam::{account_id}:policy/{SSM_DEREGISTER_POLICY_NAME}"
 
 
+def delete_deregister_ssm_policy() -> None:
+    """
+    Deletes the IAM policy that allows the bastion ECS task to
+    deregister itself from SSM.
+    """
+    client: IAMClient = fetch_boto3_client("iam")
+
+    try:
+        account_id = load_aws_account_id()
+        client.delete_policy(
+            PolicyArn=f"arn:aws:iam::{account_id}:policy/{SSM_DEREGISTER_POLICY_NAME}",
+        )
+    except client.exceptions.NoSuchEntityException:
+        return None
+
+
 def create_bastion_task_role() -> str:
     """
     Creates the role that will be used by the bastion ECS task.
@@ -99,6 +115,20 @@ def create_bastion_task_role() -> str:
     return response["Role"]["Arn"]
 
 
+def delete_bastion_task_role() -> None:
+    """
+    Deletes the role that's used by the bastion ECS task.
+    """
+    client: IAMClient = fetch_boto3_client("iam")
+
+    try:
+        client.delete_role(TASK_ROLE_NAME)
+    except client.exceptions.NoSuchEntityException:
+        return None
+
+    delete_deregister_ssm_policy()
+
+
 def create_bastion_task_execution_role() -> str:
     """
     Creates the role that will be used by ECS to launch the bastion ECS task.
@@ -139,6 +169,18 @@ def create_bastion_task_execution_role() -> str:
     )
 
     return response["Role"]["Arn"]
+
+
+def delete_bastion_task_execution_role() -> None:
+    """
+    Deletes role used by ECS to launch the bastion ECS task.
+    """
+    client: IAMClient = fetch_boto3_client("iam")
+
+    try:
+        client.delete_role(TASK_EXECUTION_ROLE_NAME)
+    except client.exceptions.NoSuchEntityException:
+        return None
 
 
 def attach_policies_to_role(role_name: str, policy_arns: List[str]) -> None:

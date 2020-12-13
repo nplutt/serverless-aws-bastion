@@ -4,16 +4,19 @@ from serverless_aws_bastion.aws.ecs import (
     create_fargate_cluster,
     create_task_definition,
     delete_fargate_cluster,
+    delete_task_definition,
     launch_fargate_task,
 )
 from serverless_aws_bastion.aws.iam import (
     create_bastion_task_execution_role,
     create_bastion_task_role,
+    delete_bastion_task_execution_role,
+    delete_bastion_task_role,
 )
 from serverless_aws_bastion.aws.ssm import load_instance_ids
 from serverless_aws_bastion.config import TASK_TIMEOUT
 from serverless_aws_bastion.enums.bastion_type import BastionType
-from serverless_aws_bastion.utils.click_utils import log_error, log_info
+from serverless_aws_bastion.utils.click_utils import log_info
 
 
 @click.group()
@@ -100,6 +103,26 @@ def handle_create_bastion_task(
 
     create_task_definition(task_role_arn, execution_role_arn)
     log_info("Bastion ECS task created")
+
+
+@cli.command(
+    "delete-bastion-task",
+    help="Creates the ECS task used to launch the bastion",
+)
+@click.option(
+    "--region",
+    help="The aws region where the Fargate task should be created",
+    type=click.STRING,
+    default=None,
+)
+def handle_delete_bastion_task(region: str = None):
+    delete_task_definition()
+
+    # log_info("Deleting bastion task iam roles...")
+    # delete_bastion_task_role()
+    # delete_bastion_task_execution_role()
+    #
+    # log_info("Bastion task roles deleted. ")
 
 
 @cli.command(

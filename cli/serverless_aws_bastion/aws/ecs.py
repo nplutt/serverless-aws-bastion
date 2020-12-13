@@ -57,7 +57,13 @@ def delete_fargate_cluster(cluster_name: str) -> None:
     client: ECSClient = fetch_boto3_client("ecs")
 
     log_info("Deleting Fargate cluster")
-    client.delete_cluster(cluster=cluster_name)
+
+    try:
+        client.delete_cluster(cluster=cluster_name)
+    except client.exceptions.ClusterNotFoundException:
+        log_error(f"Failed to find {cluster_name} Fargate cluster")
+        raise Abort()
+
     wait_for_fargate_cluster_status(cluster_name, ClusterStatus.INACTIVE)
 
 
@@ -141,6 +147,17 @@ def create_task_definition(task_role_arn: str, execution_role_arn: str) -> None:
     )
 
 
+def delete_task_definition() -> None:
+    """
+    Inactivates all serverless-aws-bastion task definitions
+    """
+    client: ECSClient = fetch_boto3_client("ecs")
+    task_definitions = client.list_task_definitions(familyPrefix=DEFAULT_NAME)
+
+    for td in task_definitions["taskDefinitionArns"]:
+        client.deregister_task_definition(taskDefinition=td)
+
+
 def launch_fargate_task(
     cluster_name: str,
     subnet_ids: str,
@@ -159,38 +176,53 @@ def launch_fargate_task(
     activation = create_activation(TASK_ROLE_NAME, instance_name)
 
     log_info("Starting bastion task")
-    response = client.run_task(
-        cluster=cluster_name,
-        taskDefinition=DEFAULT_NAME,
-        overrides={
-            "containerOverrides": [
-                {
-                    "name": DEFAULT_NAME,
-                    "environment": [
-                        {"name": "AUTHORIZED_SSH_KEYS", "value": authorized_keys},
-                        {"name": "ACTIVATION_ID", "value": activation["ActivationId"]},
-                        {
-                            "name": "ACTIVATION_CODE",
-                            "value": activation["ActivationCode"],
-                        },
-                        {"name": "AWS_REGION", "value": load_aws_region_name()},
-                        {"name": "TIMEOUT", "value": str(timeout_minutes * 60)},
-                        {"name": "BASTION_TYPE", "value": bastion_type.value},
-                    ],
+    try:
+        response = client.run_task(
+            cluster=cluster_name,
+            taskDefinition=DEFAULT_NAME,
+            overrides={
+                "containerOverrides": [
+                    {
+                        "name": DEFAULT_NAME,
+                        "environment": [
+                            {"name": "AUTHORIZED_SSH_KEYS", "value": authorized_keys},
+                            {
+                                "name": "ACTIVATION_ID",
+                                "value": activation["ActivationId"],
+                            },
+                            {
+                                "name": "ACTIVATION_CODE",
+                                "value": activation["ActivationCode"],
+                            },
+                            {"name": "AWS_REGION", "value": load_aws_region_name()},
+                            {"name": "TIMEOUT", "value": str(timeout_minutes * 60)},
+                            {"name": "BASTION_TYPE", "value": bastion_type.value},
+                        ],
+                    }
+                ]
+            },
+            count=1,
+            launchType="FARGATE",
+            networkConfiguration={
+                "awsvpcConfiguration": {
+                    "subnets": subnet_ids.split(","),
+                    "securityGroups": security_group_ids.split(","),
+                    "assignPublicIp": "ENABLED",
                 }
-            ]
-        },
-        count=1,
-        launchType="FARGATE",
-        networkConfiguration={
-            "awsvpcConfiguration": {
-                "subnets": subnet_ids.split(","),
-                "securityGroups": security_group_ids.split(","),
-                "assignPublicIp": "ENABLED",
-            }
-        },
-        tags=build_tags("ecs", {"Name": f"{DEFAULT_NAME}/{instance_name}"}),
-    )
+            },
+            tags=build_tags("ecs", {"Name": f"{DEFAULT_NAME}/{instance_name}"}),
+        )
+
+    except client.exceptions.ClusterNotFoundException:
+        log_error("Specified cluster to launch bastion task into doesn't exist")
+        raise Abort()
+
+    except (
+        client.exceptions.ClientException,
+        client.exceptions.InvalidParameterException,
+    ) as e:
+        log_error(e.response["Error"]["Message"])
+        raise Abort()
 
     wait_for_tasks_to_start(cluster_name, response["tasks"])
     return response
