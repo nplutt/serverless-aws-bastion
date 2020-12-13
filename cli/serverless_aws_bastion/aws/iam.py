@@ -122,7 +122,7 @@ def delete_bastion_task_role() -> None:
     client: IAMClient = fetch_boto3_client("iam")
 
     try:
-        client.delete_role(TASK_ROLE_NAME)
+        client.delete_role(RoleName=TASK_ROLE_NAME)
     except client.exceptions.NoSuchEntityException:
         return None
 
@@ -178,7 +178,7 @@ def delete_bastion_task_execution_role() -> None:
     client: IAMClient = fetch_boto3_client("iam")
 
     try:
-        client.delete_role(TASK_EXECUTION_ROLE_NAME)
+        client.delete_role(RoleName=TASK_EXECUTION_ROLE_NAME)
     except client.exceptions.NoSuchEntityException:
         return None
 
@@ -190,6 +190,12 @@ def attach_policies_to_role(role_name: str, policy_arns: List[str]) -> None:
     client: IAMClient = fetch_boto3_client("iam")
     for policy_arn in policy_arns:
         client.attach_role_policy(RoleName=role_name, PolicyArn=policy_arn)
+
+
+def detach_policies_from_role(role_name: str) -> None:
+    """
+    Detaches all policies from a role
+    """
 
 
 def fetch_role_arn(role_name: str) -> Optional[str]:

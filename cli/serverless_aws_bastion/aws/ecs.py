@@ -154,6 +154,7 @@ def delete_task_definition() -> None:
     client: ECSClient = fetch_boto3_client("ecs")
     task_definitions = client.list_task_definitions(familyPrefix=DEFAULT_NAME)
 
+    log_info("Deregistering task definitions")
     for td in task_definitions["taskDefinitionArns"]:
         client.deregister_task_definition(taskDefinition=td)
 

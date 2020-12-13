@@ -6,6 +6,7 @@ from serverless_aws_bastion.aws.ecs import (
     delete_fargate_cluster,
     delete_task_definition,
     launch_fargate_task,
+    load_task_public_ips,
 )
 from serverless_aws_bastion.aws.iam import (
     create_bastion_task_execution_role,
@@ -118,11 +119,11 @@ def handle_create_bastion_task(
 def handle_delete_bastion_task(region: str = None):
     delete_task_definition()
 
-    # log_info("Deleting bastion task iam roles...")
-    # delete_bastion_task_role()
-    # delete_bastion_task_execution_role()
-    #
-    # log_info("Bastion task roles deleted. ")
+    log_info("Deleting bastion task iam roles")
+    delete_bastion_task_role()
+    delete_bastion_task_execution_role()
+
+    log_info("Bastion task deleted.")
 
 
 @cli.command(
@@ -205,8 +206,12 @@ def handle_launch_bastion(
     )
     log_info("Bastion task is running")
 
-    instances = load_instance_ids(bastion_name)
-    log_info(f"Instance id(s): {', '.join(instances)}")
+    public_ips = load_task_public_ips(cluster_name, bastion_name)
+    log_info(f"Instance public ip(s): {', '.join(public_ips)}")
+
+    if bastion_type == BastionType.ssm:
+        instances = load_instance_ids(bastion_name)
+        log_info(f"Instance ssm id(s): {', '.join(instances)}")
 
 
 @cli.command(
