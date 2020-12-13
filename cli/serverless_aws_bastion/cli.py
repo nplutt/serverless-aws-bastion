@@ -68,13 +68,6 @@ def handle_delete_fargate_cluster(cluster_name: str, region: str):
     help="Creates the ECS task used to launch the bastion",
 )
 @click.option(
-    "--bastion-type",
-    help="The type of bastion that this task should run, options are either"
-    "`original` or `ssm`",
-    type=click.STRING,
-    default=BastionType.ssm.value,
-)
-@click.option(
     "--task-role-arn",
     help="The role used by the bastion task to communicate with ECS & SSM, "
     "if left blank the default role will be created and used.",
@@ -95,23 +88,17 @@ def handle_delete_fargate_cluster(cluster_name: str, region: str):
     default=None,
 )
 def handle_create_bastion_task(
-    bastion_type: str,
     task_role_arn: str = None,
     execution_role_arn: str = None,
     region: str = None,
 ):
-    try:
-        bastion_type = BastionType[bastion_type]
-    except KeyError:
-        raise click.ClickException("bastion-type must be one of `original` or `ssm`")
-
     if not task_role_arn:
         task_role_arn = create_bastion_task_role()
 
     if not execution_role_arn:
         execution_role_arn = create_bastion_task_execution_role()
 
-    create_task_definition(bastion_type, task_role_arn, execution_role_arn)
+    create_task_definition(task_role_arn, execution_role_arn)
     log_info("Bastion ECS task created")
 
 
@@ -157,6 +144,13 @@ def handle_create_bastion_task(
     default=TASK_TIMEOUT,
 )
 @click.option(
+    "--bastion-type",
+    help="The type of bastion that this task should run, options are either"
+    "`original` or `ssm`",
+    type=click.STRING,
+    default=BastionType.ssm.value,
+)
+@click.option(
     "--region",
     help="The aws region where the Fargate task should be started",
     type=click.STRING,
@@ -169,8 +163,14 @@ def handle_launch_bastion(
     authorized_keys: str,
     bastion_name: str,
     bastion_timeout: int,
+    bastion_type: str,
     region: str,
 ) -> None:
+    try:
+        bastion_type = BastionType[bastion_type]
+    except KeyError:
+        raise click.ClickException("bastion-type must be one of `original` or `ssm`")
+
     launch_fargate_task(
         cluster_name=cluster_name,
         subnet_ids=subnet_ids,
@@ -178,6 +178,7 @@ def handle_launch_bastion(
         authorized_keys=authorized_keys,
         instance_name=bastion_name,
         timeout_minutes=bastion_timeout,
+        bastion_type=bastion_type,
     )
     log_info("Bastion task is running")
 

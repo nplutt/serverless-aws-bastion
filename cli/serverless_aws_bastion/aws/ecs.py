@@ -7,7 +7,6 @@ from mypy_boto3_ecs.type_defs import (
     CreateClusterResponseTypeDef,
     DescribeClustersResponseTypeDef,
     DescribeTasksResponseTypeDef,
-    PortMappingTypeDef,
     RunTaskResponseTypeDef,
     TaskTypeDef,
 )
@@ -19,7 +18,6 @@ from serverless_aws_bastion.config import (
     TASK_BOOT_TIMEOUT,
     TASK_CPU,
     TASK_MEMORY,
-    TASK_NAMES,
     TASK_ROLE_NAME,
 )
 from serverless_aws_bastion.enums.bastion_type import BastionType
@@ -98,29 +96,16 @@ def wait_for_fargate_cluster_status(
         raise Abort()
 
 
-def create_task_definition(
-    bastion_type: BastionType, task_role_arn: str, execution_role_arn: str
-):
+def create_task_definition(task_role_arn: str, execution_role_arn: str) -> None:
     """
     Creates the task definition that will be used to launch the
     serverless bastion container
     """
     client: ECSClient = fetch_boto3_client("ecs")
-    port_mappings: List[PortMappingTypeDef] = (
-        [
-            {
-                "hostPort": 22,
-                "protocol": "tcp",
-                "containerPort": 22,
-            }
-        ]
-        if bastion_type == BastionType.original
-        else []
-    )
 
     log_info("Creating bastion ECS task")
     client.register_task_definition(
-        family=TASK_NAMES[bastion_type],
+        family=DEFAULT_NAME,
         networkMode="awsvpc",
         cpu=TASK_CPU,
         memory=TASK_MEMORY,
@@ -129,14 +114,20 @@ def create_task_definition(
         containerDefinitions=[
             {
                 "image": f"nplutt/{DEFAULT_NAME}",
-                "name": TASK_NAMES[bastion_type],
+                "name": DEFAULT_NAME,
                 "essential": True,
-                "portMappings": port_mappings,
+                "portMappings": [
+                    {
+                        "hostPort": 22,
+                        "protocol": "tcp",
+                        "containerPort": 22,
+                    }
+                ],
                 "logConfiguration": {
                     "logDriver": "awslogs",
                     "options": {
                         "awslogs-group": "/ecs/ssh-bastion",
-                        "awslogs-region": "us-west-2",
+                        "awslogs-region": load_aws_region_name(),
                         "awslogs-stream-prefix": "ecs",
                     },
                 },
@@ -153,6 +144,7 @@ def launch_fargate_task(
     authorized_keys: str,
     instance_name: str,
     timeout_minutes: int,
+    bastion_type: BastionType,
 ) -> RunTaskResponseTypeDef:
     """
     Launches the ssh bastion Fargate task into the proper subnets & security groups,
@@ -179,7 +171,7 @@ def launch_fargate_task(
                         },
                         {"name": "AWS_REGION", "value": load_aws_region_name()},
                         {"name": "TIMEOUT", "value": str(timeout_minutes * 60)},
-                        {"name": "BASTION_TYPE", "value": "ORIGINAL"},
+                        {"name": "BASTION_TYPE", "value": bastion_type.value},
                     ],
                 }
             ]
