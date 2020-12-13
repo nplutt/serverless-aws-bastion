@@ -68,3 +68,14 @@ def build_tags(service: str, extra_tags: dict = None) -> List[Any]:
         }
         for key, value in tags.items()
     ]
+
+
+def get_tag_values(
+    tags: List[Any],
+    tag_key: str,
+) -> List[str]:
+    """
+    Given a list of tags in key value format,
+    returns a list of matching tag values
+    """
+    return [t["value"] for t in tags if t["key"] == tag_key]

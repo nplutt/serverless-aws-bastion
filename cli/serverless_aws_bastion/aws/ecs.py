@@ -11,6 +11,9 @@ from mypy_boto3_ecs.type_defs import (
     TaskTypeDef,
 )
 
+from serverless_aws_bastion.aws.ec2 import (
+    load_public_ips_for_network_interfaces,
+)
 from serverless_aws_bastion.aws.ssm import create_activation
 from serverless_aws_bastion.config import (
     CLUSTER_PROVISION_TIMEOUT,
@@ -25,6 +28,7 @@ from serverless_aws_bastion.enums.cluster_status import ClusterStatus
 from serverless_aws_bastion.utils.aws_utils import (
     build_tags,
     fetch_boto3_client,
+    get_tag_values,
     load_aws_region_name,
 )
 from serverless_aws_bastion.utils.click_utils import log_error, log_info
@@ -204,6 +208,7 @@ def describe_task(
     return client.describe_tasks(
         cluster=cluster_name,
         tasks=task_arns,
+        include=["TAGS"],
     )
 
 
@@ -238,3 +243,29 @@ def wait_for_tasks_to_start(
     if not tasks_started:
         log_error("Bastion task failed to start")
         raise Abort()
+
+
+def load_task_public_ips(cluster_name: str, instance_name: str) -> List[str]:
+    """
+    Loads all of the public ip addresses for tasks that were
+    created by this cli. If the instance name is passed in, then
+    instances are also filtered by name.
+    """
+    client: ECSClient = fetch_boto3_client("ecs")
+
+    task_list = client.list_tasks(cluster=cluster_name, family=DEFAULT_NAME)
+    task_response = describe_task(cluster_name, task_list["taskArns"])
+
+    attachments = [
+        a
+        for t in task_response["tasks"]
+        for a in t["attachments"]
+        if f"{DEFAULT_NAME}/{instance_name}" in get_tag_values(t["tags"], "Name")
+    ]
+    network_interface_ids = [
+        detail["value"]
+        for a in attachments
+        for detail in a["details"]
+        if detail["name"] == "networkInterfaceId"
+    ]
+    return load_public_ips_for_network_interfaces(network_interface_ids)

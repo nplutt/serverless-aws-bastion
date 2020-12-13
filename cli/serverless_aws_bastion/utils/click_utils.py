@@ -12,4 +12,4 @@ def log_error(message: str) -> None:
     """
     Formats and prints out an error level message to the console
     """
-    secho(message, fg="red", err=True)
+    secho(f"Error: {message}", fg="red", err=True)
