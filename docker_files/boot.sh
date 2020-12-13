@@ -17,9 +17,12 @@ echo ${AUTHORIZED_SSH_KEYS} >> /home/ssh-user/.ssh/authorized_keys
 echo "Starting ssh..."
 /usr/sbin/sshd -f /etc/ssh/sshd_config &
 
-echo "Registering & starting ssm..."
-/usr/bin/amazon-ssm-agent -register -code ${ACTIVATION_CODE} -id ${ACTIVATION_ID} -region ${AWS_REGION} -clear -y
-/usr/bin/amazon-ssm-agent &
+if [ $BASTION_TYPE = "ssm" ]
+then
+  echo "Registering & starting ssm..."
+  /usr/bin/amazon-ssm-agent -register -code ${ACTIVATION_CODE} -id ${ACTIVATION_ID} -region ${AWS_REGION} -clear -y
+  /usr/bin/amazon-ssm-agent &
+fi
 
 echo "Running bastion server for ${TIMEOUT} seconds..."
 sleep ${TIMEOUT}

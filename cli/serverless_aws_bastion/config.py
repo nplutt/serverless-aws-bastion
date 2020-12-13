@@ -1,6 +1,4 @@
-from typing import List
-
-from mypy_boto3_ecs.type_defs import ContainerDefinitionTypeDef
+from serverless_aws_bastion.enums.bastion_type import BastionType
 
 
 TASK_BOOT_TIMEOUT = 100

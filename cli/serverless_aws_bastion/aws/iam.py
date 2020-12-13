@@ -1,19 +1,19 @@
 import json
 from typing import List, Optional
 
-import click
 from mypy_boto3_iam.client import IAMClient
 
-from serverless_aws_bastion.aws.utils import (
-    build_tags,
-    fetch_boto3_client,
-    load_aws_account_id,
-)
 from serverless_aws_bastion.config import (
     SSM_DEREGISTER_POLICY_NAME,
     TASK_EXECUTION_ROLE_NAME,
     TASK_ROLE_NAME,
 )
+from serverless_aws_bastion.utils.aws_utils import (
+    build_tags,
+    fetch_boto3_client,
+    load_aws_account_id,
+)
+from serverless_aws_bastion.utils.click_utils import log_info
 
 
 def create_deregister_ssm_policy() -> str:
@@ -25,7 +25,7 @@ def create_deregister_ssm_policy() -> str:
     """
     client: IAMClient = fetch_boto3_client("iam")
     try:
-        click.secho(f"Creating {SSM_DEREGISTER_POLICY_NAME} policy", fg="green")
+        log_info(f"Creating {SSM_DEREGISTER_POLICY_NAME} policy")
         response = client.create_policy(
             Description="Used by serverless-aws-bastion ECS task to "
             "deregister itself from SSM",
@@ -65,7 +65,7 @@ def create_bastion_task_role() -> str:
     if current_role_arn:
         return current_role_arn
 
-    click.secho(f"Creating {TASK_ROLE_NAME} role", fg="green")
+    log_info(f"Creating {TASK_ROLE_NAME} role")
     response = client.create_role(
         RoleName=TASK_ROLE_NAME,
         Description="Used by serverless-aws-bastion ECS tasks",
@@ -112,7 +112,7 @@ def create_bastion_task_execution_role() -> str:
     if current_role_arn:
         return current_role_arn
 
-    click.secho(f"Creating {TASK_EXECUTION_ROLE_NAME} role", fg="green")
+    log_info(f"Creating {TASK_EXECUTION_ROLE_NAME} role")
     response = client.create_role(
         RoleName=TASK_EXECUTION_ROLE_NAME,
         Description="Used by Fargate to launch serverless-aws-bastion ECS tasks",
