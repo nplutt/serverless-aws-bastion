@@ -1,4 +1,5 @@
 import click
+from typing import Optional
 
 from serverless_aws_bastion.aws.ecs import (
     create_fargate_cluster,
@@ -7,6 +8,7 @@ from serverless_aws_bastion.aws.ecs import (
     delete_task_definition,
     launch_fargate_task,
     load_task_public_ips,
+    load_running_task_info,
 )
 from serverless_aws_bastion.aws.iam import (
     create_bastion_task_execution_role,
@@ -42,7 +44,7 @@ def cli():
     type=click.STRING,
     default=None,
 )
-def handle_create_fargate_cluster(cluster_name: str, region: str):
+def handle_create_fargate_cluster(cluster_name: str, region: Optional[str]):
     create_fargate_cluster(cluster_name)
     log_info("Fargate cluster running")
 
@@ -63,7 +65,7 @@ def handle_create_fargate_cluster(cluster_name: str, region: str):
     type=click.STRING,
     default=None,
 )
-def handle_delete_fargate_cluster(cluster_name: str, region: str):
+def handle_delete_fargate_cluster(cluster_name: str, region: Optional[str]):
     delete_fargate_cluster(cluster_name)
     log_info("Fargate cluster deleted")
 
@@ -217,12 +219,18 @@ def handle_launch_bastion(
 
 @cli.command(
     "list-bastion-instances",
-    help="Starts up a serverless bastion in your Fargate cluster",
+    help="Lists all serverless bastion instances running in your Fargate cluster",
 )
 @click.option(
-    "--name",
+    "--cluster-name",
+    help="The name of the Fargate cluster to check for bastion instances in",
+    type=click.STRING,
+)
+@click.option(
+    "--bastion-name",
     help="The name bastion instance to filter by",
     type=click.STRING,
+    default=None,
 )
 @click.option(
     "--region",
@@ -230,8 +238,9 @@ def handle_launch_bastion(
     type=click.STRING,
     default=None,
 )
-def handle_list_bastion_instances(name: str, region: str) -> None:
-    instances = load_instance_ids(name)
+def handle_list_bastion_instances(cluster_name: str, bastion_name: Optional[str], region: Optional[str]) -> None:
+    task_info = load_running_task_info(cluster_name, bastion_name)
+    instances = load_instance_ids(bastion_name)
     log_info(f"Instance ids: {', '.join(instances)}")
 
 

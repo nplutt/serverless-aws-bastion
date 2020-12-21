@@ -1,8 +1,24 @@
 from typing import List
 
 from mypy_boto3_ec2.client import EC2Client
+from mypy_boto3_ecs.type_defs import TaskTypeDef
 
 from serverless_aws_bastion.utils.aws_utils import fetch_boto3_client
+
+
+def load_public_ips_from_task_data(task_data: List[TaskTypeDef]) -> List[str]:
+    attachments = [
+        a
+        for t in task_data
+        for a in t["attachments"]
+    ]
+    network_interface_ids = [
+        detail["value"]
+        for a in attachments
+        for detail in a["details"]
+        if detail["name"] == "networkInterfaceId"
+    ]
+    return load_public_ips_for_network_interfaces(network_interface_ids)
 
 
 def load_public_ips_for_network_interfaces(

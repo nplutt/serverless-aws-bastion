@@ -28,7 +28,7 @@ setup(
             "serverless-aws-bastion =  serverless_aws_bastion.cli:main",
         ],
     },
-    install_requires=["boto3", "boto3-stubs[ec2,ecs,iam,ssm,sts]", "click", "colorama"],
+    install_requires=["attrs", "boto3", "boto3-stubs[ec2,ecs,iam,ssm,sts]", "click", "colorama"],
     extras_require={
         "test": ["pytest", "pytest-cov"],
         "dev": ["mypy", "black", "isort"],

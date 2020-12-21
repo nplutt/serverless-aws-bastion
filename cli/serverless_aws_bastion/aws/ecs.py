@@ -1,5 +1,6 @@
 from time import sleep
-from typing import List
+from typing import List, Optional
+from uuid import uuid4
 
 from click import Abort
 from mypy_boto3_ecs.client import ECSClient
@@ -174,7 +175,8 @@ def launch_fargate_task(
     """
     client: ECSClient = fetch_boto3_client("ecs")
 
-    activation = create_activation(TASK_ROLE_NAME, instance_name)
+    bastion_id = str(uuid4())
+    activation = create_activation(TASK_ROLE_NAME, instance_name, bastion_id)
 
     log_info("Starting bastion task")
     try:
@@ -211,7 +213,11 @@ def launch_fargate_task(
                     "assignPublicIp": "ENABLED",
                 }
             },
-            tags=build_tags("ecs", {"Name": f"{DEFAULT_NAME}/{instance_name}"}),
+            tags=build_tags("ecs", {
+                "Name": f"{DEFAULT_NAME}/{instance_name}",
+                "BastionId": bastion_id,
+                "ActivationId": activation['ActivationId'],
+            }),
         )
 
     except client.exceptions.ClusterNotFoundException:
@@ -227,6 +233,9 @@ def launch_fargate_task(
 
     wait_for_tasks_to_start(cluster_name, response["tasks"])
     return response
+
+
+# def stop_fargate_tasks()
 
 
 def describe_task(
@@ -278,22 +287,35 @@ def wait_for_tasks_to_start(
         raise Abort()
 
 
-def load_task_public_ips(cluster_name: str, instance_name: str) -> List[str]:
+def load_running_task_info(cluster_name: str, instance_name: Optional[str]) -> List[TaskTypeDef]:
     """
-    Loads all of the public ip addresses for tasks that were
-    created by this cli. If the instance name is passed in, then
-    instances are also filtered by name.
+    Loads and returns all running bastion tasks in the given cluster with the
+    selected instance name
     """
     client: ECSClient = fetch_boto3_client("ecs")
 
     task_list = client.list_tasks(cluster=cluster_name, family=DEFAULT_NAME)
     task_response = describe_task(cluster_name, task_list["taskArns"])
 
+    return [
+        t for t in task_response["tasks"]
+        if instance_name is None
+        or f"{DEFAULT_NAME}/{instance_name}" in get_tag_values(t["tags"], "Name")
+    ]
+
+
+def load_task_public_ips(cluster_name: str, instance_name: str) -> List[str]:
+    """
+    Loads all of the public ip addresses for tasks that were
+    created by this cli. If the instance name is passed in, then
+    instances are also filtered by name.
+    """
+    tasks = load_running_task_info(cluster_name, instance_name)
+
     attachments = [
         a
-        for t in task_response["tasks"]
+        for t in tasks
         for a in t["attachments"]
-        if f"{DEFAULT_NAME}/{instance_name}" in get_tag_values(t["tags"], "Name")
     ]
     network_interface_ids = [
         detail["value"]

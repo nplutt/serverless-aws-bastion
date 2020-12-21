@@ -15,7 +15,7 @@ from serverless_aws_bastion.utils.aws_utils import (
 
 
 def create_activation(
-    iam_role_name: str, instance_name: str
+    iam_role_name: str, instance_name: str, bastion_id: str,
 ) -> CreateActivationResultTypeDef:
     """
     Creates an SSM activation code that is used to connect the agent
@@ -30,12 +30,12 @@ def create_activation(
         IamRole=iam_role_name,
         RegistrationLimit=1,
         ExpirationDate=datetime.utcnow() + timedelta(minutes=5),
-        Tags=build_tags("ssm", {"Name": instance_name}),
+        Tags=build_tags("ssm", {"Name": instance_name, "BastionId": bastion_id}),
     )
     return response
 
 
-def load_instance_ids(instance_name: str = None) -> List[str]:
+def load_instance_ids(instance_name: str = None, bastion_ids: List[str] = None) -> List[str]:
     """
     Loads all of the ssm instance ids for instances that were
     created by this cli. If the instance name is passed in, then
@@ -54,6 +54,14 @@ def load_instance_ids(instance_name: str = None) -> List[str]:
             {
                 "Key": "tag:Name",
                 "Values": [f"{DEFAULT_NAME}/{instance_name}"],
+            }
+        )
+
+    if bastion_ids:
+        filters.append(
+            {
+                "Key": "tag:BastionId",
+                "Values": bastion_ids,
             }
         )
 

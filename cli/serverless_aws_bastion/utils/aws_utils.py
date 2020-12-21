@@ -75,7 +75,7 @@ def get_tag_values(
     tag_key: str,
 ) -> List[str]:
     """
-    Given a list of tags in key value format,
-    returns a list of matching tag values
+    Given a list of tags in key value format, returns a list
+    of matching tag values
     """
     return [t["value"] for t in tags if t["key"] == tag_key]

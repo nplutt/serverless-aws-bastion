@@ -1,6 +1,3 @@
-from serverless_aws_bastion.enums.bastion_type import BastionType
-
-
 TASK_BOOT_TIMEOUT = 100
 CLUSTER_PROVISION_TIMEOUT = 60
 TASK_TIMEOUT = 60 * 8
