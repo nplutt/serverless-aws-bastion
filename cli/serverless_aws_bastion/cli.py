@@ -13,6 +13,7 @@ from serverless_aws_bastion.aws.iam import (
     create_bastion_task_role,
     delete_bastion_task_execution_role,
     delete_bastion_task_role,
+    delete_deregister_ssm_policy,
 )
 from serverless_aws_bastion.aws.ssm import load_instance_ids
 from serverless_aws_bastion.config import TASK_TIMEOUT
@@ -119,11 +120,11 @@ def handle_create_bastion_task(
 def handle_delete_bastion_task(region: str = None):
     delete_task_definition()
 
-    log_info("Deleting bastion task iam roles")
     delete_bastion_task_role()
     delete_bastion_task_execution_role()
+    delete_deregister_ssm_policy()
 
-    log_info("Bastion task deleted.")
+    log_info("Bastion ECS task deleted")
 
 
 @cli.command(
