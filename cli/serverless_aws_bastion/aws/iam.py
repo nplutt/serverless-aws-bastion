@@ -52,6 +52,23 @@ def create_deregister_ssm_policy() -> str:
         return f"arn:aws:iam::{account_id}:policy/{SSM_DEREGISTER_POLICY_NAME}"
 
 
+def delete_deregister_ssm_policy() -> None:
+    """
+    Deletes the IAM policy that allows the bastion ECS task to
+    deregister itself from SSM.
+    """
+    client: IAMClient = fetch_boto3_client("iam")
+
+    try:
+        log_info(f"Deleting {SSM_DEREGISTER_POLICY_NAME} policy")
+        account_id = load_aws_account_id()
+        client.delete_policy(
+            PolicyArn=f"arn:aws:iam::{account_id}:policy/{SSM_DEREGISTER_POLICY_NAME}",
+        )
+    except client.exceptions.NoSuchEntityException:
+        return None
+
+
 def create_bastion_task_role() -> str:
     """
     Creates the role that will be used by the bastion ECS task.
@@ -99,6 +116,13 @@ def create_bastion_task_role() -> str:
     return response["Role"]["Arn"]
 
 
+def delete_bastion_task_role() -> None:
+    """
+    Deletes the role that's used by the bastion ECS task.
+    """
+    delete_role(TASK_ROLE_NAME)
+
+
 def create_bastion_task_execution_role() -> str:
     """
     Creates the role that will be used by ECS to launch the bastion ECS task.
@@ -141,6 +165,28 @@ def create_bastion_task_execution_role() -> str:
     return response["Role"]["Arn"]
 
 
+def delete_bastion_task_execution_role() -> None:
+    """
+    Deletes role used by ECS to launch the bastion ECS task.
+    """
+    delete_role(TASK_EXECUTION_ROLE_NAME)
+
+
+def delete_role(role_name: str) -> None:
+    """
+    Safely deletes a given role by first detaching any policies
+    and then deleting the role and handling any exceptions
+    """
+    client: IAMClient = fetch_boto3_client("iam")
+
+    try:
+        log_info(f"Deleting {role_name} role")
+        detach_policies_from_role(role_name)
+        client.delete_role(RoleName=role_name)
+    except client.exceptions.NoSuchEntityException:
+        return None
+
+
 def attach_policies_to_role(role_name: str, policy_arns: List[str]) -> None:
     """
     Attaches a list of IAM policies to a given IAM role
@@ -148,6 +194,22 @@ def attach_policies_to_role(role_name: str, policy_arns: List[str]) -> None:
     client: IAMClient = fetch_boto3_client("iam")
     for policy_arn in policy_arns:
         client.attach_role_policy(RoleName=role_name, PolicyArn=policy_arn)
+
+
+def detach_policies_from_role(role_name: str) -> None:
+    """
+    Detaches all policies from a role
+    """
+    client: IAMClient = fetch_boto3_client("iam")
+
+    try:
+        policies = client.list_attached_role_policies(RoleName=role_name)
+        policy_arns = [p["PolicyArn"] for p in policies["AttachedPolicies"]]
+    except client.exceptions.NoSuchEntityException:
+        return None
+
+    for policy_arn in policy_arns:
+        client.detach_role_policy(RoleName=role_name, PolicyArn=policy_arn)
 
 
 def fetch_role_arn(role_name: str) -> Optional[str]:
