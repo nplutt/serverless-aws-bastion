@@ -26,6 +26,7 @@ from serverless_aws_bastion.aws.ssm import load_instance_ids
 from serverless_aws_bastion.config import TASK_TIMEOUT
 from serverless_aws_bastion.dto.instance_info import build_instance_info
 from serverless_aws_bastion.enum.bastion_type import BastionType
+from serverless_aws_bastion.enum.log_level import LogLevel
 from serverless_aws_bastion.utils.click_utils import log_info
 
 
@@ -35,6 +36,12 @@ def common_params(func):
         help="The aws region to run this command in",
         type=click.STRING,
         default=None,
+    )
+    @click.option(
+        "--log-level",
+        help="Logging level to run the CLI at, the options are `info` or `error`. The default is `info`.",
+        type=click.STRING,
+        default=LogLevel.info.name,
     )
     @wraps(func)
     def wrapper(*args, **kwargs):
