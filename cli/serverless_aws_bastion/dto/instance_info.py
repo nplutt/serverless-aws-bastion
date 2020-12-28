@@ -1,33 +1,47 @@
-from typing import Any, List, Optional
+from typing import Dict, List, Optional
 
 import attr
 from mypy_boto3_ecs.type_defs import TaskTypeDef
 
 from serverless_aws_bastion.aws.ec2 import load_public_ips_from_task_data
-from serverless_aws_bastion.utils.aws_utils import get_tag_values
+from serverless_aws_bastion.utils.aws_utils import get_tag_value
 
 
-@attr.s
+@attr.s(auto_attribs=True)
 class InstanceInfo:
-    task_arn: str
     bastion_id: str
     public_ip: str
-    instance_name: str
     ssm_instance_id: Optional[str]
+    instance_name: str
+    task_arn: str
 
-    @classmethod
-    def from_stuff(
-        cls,
-        task_data: List[TaskTypeDef],
-        ssm_data: List[Any],
-    ) -> List["InstanceInfo"]:
-        return [
-            cls(
+    @property
+    def as_dict(self) -> dict:
+        return attr.asdict(self)
+
+
+def build_instance_info(
+    task_data: List[TaskTypeDef],
+    task_ips: Dict[str, str],
+    ssm_instance_data: Dict[str, str],
+) -> List[InstanceInfo]:
+    instance_info = []
+    for data in task_data:
+        bastion_id = get_tag_value("ecs", data["tags"], "BastionId")
+
+        name_tag = get_tag_value("ecs", data["tags"], "Name")
+        instance_name = name_tag[name_tag.find("/") + 1 :]
+
+        instance_info.append(
+            InstanceInfo(
                 task_arn=data["taskArn"],
-                bastion_id=get_tag_values(data["tags"], "BastionId")[0],
-                instance_name=get_tag_values(data["tags"], "Name")[0],
-                public_ip=load_public_ips_from_task_data([data])[0],
-                ssm_instance_id="",
-            )
-            for data in task_data
-        ]
+                bastion_id=bastion_id,
+                instance_name=instance_name,
+                public_ip=task_ips[bastion_id],
+                ssm_instance_id=ssm_instance_data.get(
+                    get_tag_value("ecs", data["tags"], "ActivationId"),
+                ),
+            ),
+        )
+
+    return instance_info

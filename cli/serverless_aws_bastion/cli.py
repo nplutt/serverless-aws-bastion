@@ -1,8 +1,10 @@
+import json
 from functools import wraps
 from typing import Optional
 
 import click
 
+from serverless_aws_bastion.aws.ec2 import load_public_ips_from_task_data
 from serverless_aws_bastion.aws.ecs import (
     create_fargate_cluster,
     create_task_definition,
@@ -11,6 +13,7 @@ from serverless_aws_bastion.aws.ecs import (
     launch_fargate_task,
     load_running_task_info,
     load_task_public_ips,
+    stop_fargate_tasks,
 )
 from serverless_aws_bastion.aws.iam import (
     create_bastion_task_execution_role,
@@ -21,7 +24,8 @@ from serverless_aws_bastion.aws.iam import (
 )
 from serverless_aws_bastion.aws.ssm import load_instance_ids
 from serverless_aws_bastion.config import TASK_TIMEOUT
-from serverless_aws_bastion.enums.bastion_type import BastionType
+from serverless_aws_bastion.dto.instance_info import build_instance_info
+from serverless_aws_bastion.enum.bastion_type import BastionType
 from serverless_aws_bastion.utils.click_utils import log_info
 
 
@@ -183,7 +187,7 @@ def handle_launch_bastion(
     **kwargs,
 ) -> None:
     try:
-        bastion_type = BastionType[bastion_type]
+        bastion_type_enum = BastionType[bastion_type]
     except KeyError:
         raise click.ClickException("bastion-type must be one of `original` or `ssm`")
 
@@ -194,7 +198,7 @@ def handle_launch_bastion(
         authorized_keys=authorized_keys,
         instance_name=bastion_name,
         timeout_minutes=bastion_timeout,
-        bastion_type=bastion_type,
+        bastion_type=bastion_type_enum,
     )
     log_info("Bastion task is running")
 
@@ -207,6 +211,40 @@ def handle_launch_bastion(
 
 
 @cli.command(
+    "stop-bastion-instances",
+    help="Stop bastion instances in a given cluster",
+)
+@click.option(
+    "--cluster-name",
+    help="The name of the Fargate cluster to stop bastion instances in",
+    type=click.STRING,
+    required=True,
+)
+@click.option(
+    "--bastion-name",
+    help="The name bastion instance to filter by",
+    type=click.STRING,
+    default=None,
+)
+@click.option(
+    "--bastion-id",
+    help="The id bastion instance to filter by",
+    type=click.STRING,
+    default=None,
+)
+@common_params
+def handle_stop_bastion_instances(
+    cluster_name: str,
+    bastion_name: Optional[str],
+    bastion_id: Optional[str],
+    **kwargs,
+) -> None:
+    task_info = load_running_task_info(cluster_name, bastion_name, bastion_id)
+    stop_fargate_tasks(cluster_name, task_info)
+    log_info(f"Stopped {len(task_info)} tasks")
+
+
+@cli.command(
     "list-bastion-instances",
     help="Lists all serverless bastion instances running in your Fargate cluster",
 )
@@ -214,6 +252,7 @@ def handle_launch_bastion(
     "--cluster-name",
     help="The name of the Fargate cluster to check for bastion instances in",
     type=click.STRING,
+    required=True,
 )
 @click.option(
     "--bastion-name",
@@ -225,9 +264,16 @@ def handle_launch_bastion(
 def handle_list_bastion_instances(
     cluster_name: str, bastion_name: Optional[str], **kwargs
 ) -> None:
-    task_info = load_running_task_info(cluster_name, bastion_name)
-    instances = load_instance_ids(bastion_name)
-    log_info(f"Instance ids: {', '.join(instances)}")
+    task_instance_info = load_running_task_info(cluster_name, bastion_name)
+    task_instance_ips = load_public_ips_from_task_data(task_instance_info)
+    ssm_instance_info = load_instance_ids(bastion_name)
+
+    instance_info = build_instance_info(
+        task_instance_info,
+        task_instance_ips,
+        ssm_instance_info,
+    )
+    log_info(json.dumps([i.as_dict for i in instance_info], indent=4))
 
 
 def main() -> None:

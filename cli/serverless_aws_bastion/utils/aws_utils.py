@@ -1,10 +1,13 @@
 from datetime import datetime
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 import boto3
 import click
 from botocore.config import Config
+from click.exceptions import Abort
 from mypy_boto3_sts.client import STSClient
+
+from serverless_aws_bastion.utils.click_utils import log_error
 
 
 CLIENT_CACHE: Dict[str, Any] = {}
@@ -52,6 +55,14 @@ def load_aws_account_id() -> str:
     return client.get_caller_identity()["Account"]
 
 
+def capitalize_tag_kv(service: str) -> bool:
+    """
+    Returns true or false depending on if the boto3 service
+    name needs the key & value values capitalized
+    """
+    return service in ("ec2", "iam", "ssm")
+
+
 def build_tags(service: str, extra_tags: dict = None) -> List[Any]:
     tags = {
         "CreatedBy": "serverless-aws-bastion:cli",
@@ -60,7 +71,7 @@ def build_tags(service: str, extra_tags: dict = None) -> List[Any]:
     if extra_tags:
         tags.update(extra_tags)
 
-    capitalize = service in ("iam", "ssm")
+    capitalize = capitalize_tag_kv(service)
     return [
         {
             f"{'K' if capitalize else 'k'}ey": key,
@@ -70,12 +81,26 @@ def build_tags(service: str, extra_tags: dict = None) -> List[Any]:
     ]
 
 
-def get_tag_values(
+def get_tag_value(
+    service: str,
     tags: List[Any],
     tag_key: str,
-) -> List[str]:
+) -> str:
     """
-    Given a list of tags in key value format, returns a list
-    of matching tag values
+    Given a list of tags in key value format, returns a matching
+    tag value if one is found.
     """
-    return [t["value"] for t in tags if t["key"] == tag_key]
+    capitalize = capitalize_tag_kv(service)
+    matches = [
+        t[f"{'V' if capitalize else 'v'}alue"]
+        for t in tags
+        if t[f"{'K' if capitalize else 'k'}ey"] == tag_key
+    ]
+    if len(matches) != 1:
+        log_error(
+            f"Oops it looks like we're unable to find a match for tag {tag_key}."
+            "Please open an issue to help us get this fixed!",
+        )
+        raise Abort()
+
+    return matches[0]

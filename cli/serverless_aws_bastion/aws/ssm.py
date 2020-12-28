@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from typing import List
+from typing import Dict, List
 
 from mypy_boto3_ssm.client import SSMClient
 from mypy_boto3_ssm.type_defs import (
@@ -40,7 +40,7 @@ def create_activation(
 def load_instance_ids(
     instance_name: str = None,
     bastion_ids: List[str] = None,
-) -> List[str]:
+) -> Dict[str, str]:
     """
     Loads all of the ssm instance ids for instances that were
     created by this cli. If the instance name is passed in, then
@@ -71,4 +71,6 @@ def load_instance_ids(
         )
 
     response = client.describe_instance_information(Filters=filters)
-    return [i["InstanceId"] for i in response["InstanceInformationList"]]
+    return {
+        i["ActivationId"]: i["InstanceId"] for i in response["InstanceInformationList"]
+    }
