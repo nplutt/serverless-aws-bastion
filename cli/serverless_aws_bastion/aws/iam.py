@@ -41,9 +41,9 @@ def create_deregister_ssm_policy() -> str:
                             ],
                             "Effect": "Allow",
                             "Resource": "*",
-                        }
+                        },
                     ],
-                }
+                },
             ),
         )
         return response["Policy"]["Arn"]
@@ -94,12 +94,12 @@ def create_bastion_task_role() -> str:
                         "Sid": "",
                         "Effect": "Allow",
                         "Principal": {
-                            "Service": ["ecs-tasks.amazonaws.com", "ssm.amazonaws.com"]
+                            "Service": ["ecs-tasks.amazonaws.com", "ssm.amazonaws.com"],
                         },
                         "Action": "sts:AssumeRole",
-                    }
+                    },
                 ],
-            }
+            },
         ),
         Tags=build_tags("iam"),
     )
@@ -149,9 +149,9 @@ def create_bastion_task_execution_role() -> str:
                         "Effect": "Allow",
                         "Principal": {"Service": ["ecs-tasks.amazonaws.com"]},
                         "Action": "sts:AssumeRole",
-                    }
+                    },
                 ],
-            }
+            },
         ),
         Tags=build_tags("iam"),
     )

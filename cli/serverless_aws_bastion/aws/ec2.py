@@ -7,11 +7,7 @@ from serverless_aws_bastion.utils.aws_utils import fetch_boto3_client
 
 
 def load_public_ips_from_task_data(task_data: List[TaskTypeDef]) -> List[str]:
-    attachments = [
-        a
-        for t in task_data
-        for a in t["attachments"]
-    ]
+    attachments = [a for t in task_data for a in t["attachments"]]
     network_interface_ids = [
         detail["value"]
         for a in attachments

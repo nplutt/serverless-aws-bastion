@@ -96,7 +96,7 @@ def wait_for_fargate_cluster_status(
             break
 
         cluster_provisioned = all(
-            [c["status"] == cluster_stats.value for c in cluster_info["clusters"]]
+            [c["status"] == cluster_stats.value for c in cluster_info["clusters"]],
         )
 
         sleep(2)
@@ -132,7 +132,7 @@ def create_task_definition(task_role_arn: str, execution_role_arn: str) -> None:
                         "hostPort": 22,
                         "protocol": "tcp",
                         "containerPort": 22,
-                    }
+                    },
                 ],
                 "logConfiguration": {
                     "logDriver": "awslogs",
@@ -201,8 +201,8 @@ def launch_fargate_task(
                             {"name": "TIMEOUT", "value": str(timeout_minutes * 60)},
                             {"name": "BASTION_TYPE", "value": bastion_type.value},
                         ],
-                    }
-                ]
+                    },
+                ],
             },
             count=1,
             launchType="FARGATE",
@@ -211,13 +211,16 @@ def launch_fargate_task(
                     "subnets": subnet_ids.split(","),
                     "securityGroups": security_group_ids.split(","),
                     "assignPublicIp": "ENABLED",
-                }
+                },
             },
-            tags=build_tags("ecs", {
-                "Name": f"{DEFAULT_NAME}/{instance_name}",
-                "BastionId": bastion_id,
-                "ActivationId": activation['ActivationId'],
-            }),
+            tags=build_tags(
+                "ecs",
+                {
+                    "Name": f"{DEFAULT_NAME}/{instance_name}",
+                    "BastionId": bastion_id,
+                    "ActivationId": activation["ActivationId"],
+                },
+            ),
         )
 
     except client.exceptions.ClusterNotFoundException:
@@ -276,7 +279,7 @@ def wait_for_tasks_to_start(
             break
 
         tasks_started = all(
-            [t["lastStatus"] == t["desiredStatus"] for t in task_info["tasks"]]
+            [t["lastStatus"] == t["desiredStatus"] for t in task_info["tasks"]],
         )
 
         sleep(2)
@@ -287,7 +290,10 @@ def wait_for_tasks_to_start(
         raise Abort()
 
 
-def load_running_task_info(cluster_name: str, instance_name: Optional[str]) -> List[TaskTypeDef]:
+def load_running_task_info(
+    cluster_name: str,
+    instance_name: Optional[str],
+) -> List[TaskTypeDef]:
     """
     Loads and returns all running bastion tasks in the given cluster with the
     selected instance name
@@ -298,7 +304,8 @@ def load_running_task_info(cluster_name: str, instance_name: Optional[str]) -> L
     task_response = describe_task(cluster_name, task_list["taskArns"])
 
     return [
-        t for t in task_response["tasks"]
+        t
+        for t in task_response["tasks"]
         if instance_name is None
         or f"{DEFAULT_NAME}/{instance_name}" in get_tag_values(t["tags"], "Name")
     ]
@@ -312,11 +319,7 @@ def load_task_public_ips(cluster_name: str, instance_name: str) -> List[str]:
     """
     tasks = load_running_task_info(cluster_name, instance_name)
 
-    attachments = [
-        a
-        for t in tasks
-        for a in t["attachments"]
-    ]
+    attachments = [a for t in tasks for a in t["attachments"]]
     network_interface_ids = [
         detail["value"]
         for a in attachments
