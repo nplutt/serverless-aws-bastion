@@ -1,5 +1,6 @@
 from time import sleep
-from typing import List
+from typing import Dict, List, Optional
+from uuid import uuid4
 
 from click import Abort
 from mypy_boto3_ecs.client import ECSClient
@@ -23,12 +24,12 @@ from serverless_aws_bastion.config import (
     TASK_MEMORY,
     TASK_ROLE_NAME,
 )
-from serverless_aws_bastion.enums.bastion_type import BastionType
-from serverless_aws_bastion.enums.cluster_status import ClusterStatus
+from serverless_aws_bastion.enum.bastion_type import BastionType
+from serverless_aws_bastion.enum.cluster_status import ClusterStatus
 from serverless_aws_bastion.utils.aws_utils import (
     build_tags,
     fetch_boto3_client,
-    get_tag_values,
+    get_tag_value,
     load_aws_region_name,
 )
 from serverless_aws_bastion.utils.click_utils import log_error, log_info
@@ -95,7 +96,7 @@ def wait_for_fargate_cluster_status(
             break
 
         cluster_provisioned = all(
-            [c["status"] == cluster_stats.value for c in cluster_info["clusters"]]
+            [c["status"] == cluster_stats.value for c in cluster_info["clusters"]],
         )
 
         sleep(2)
@@ -131,7 +132,7 @@ def create_task_definition(task_role_arn: str, execution_role_arn: str) -> None:
                         "hostPort": 22,
                         "protocol": "tcp",
                         "containerPort": 22,
-                    }
+                    },
                 ],
                 "logConfiguration": {
                     "logDriver": "awslogs",
@@ -174,7 +175,11 @@ def launch_fargate_task(
     """
     client: ECSClient = fetch_boto3_client("ecs")
 
-    activation = create_activation(TASK_ROLE_NAME, instance_name)
+    bastion_id = str(uuid4())
+
+    activation: Dict[str, str] = {}
+    if bastion_type == BastionType.ssm:
+        activation = create_activation(TASK_ROLE_NAME, instance_name, bastion_id)  # type: ignore
 
     log_info("Starting bastion task")
     try:
@@ -189,18 +194,18 @@ def launch_fargate_task(
                             {"name": "AUTHORIZED_SSH_KEYS", "value": authorized_keys},
                             {
                                 "name": "ACTIVATION_ID",
-                                "value": activation["ActivationId"],
+                                "value": activation.get("ActivationId", ""),
                             },
                             {
                                 "name": "ACTIVATION_CODE",
-                                "value": activation["ActivationCode"],
+                                "value": activation.get("ActivationCode", ""),
                             },
                             {"name": "AWS_REGION", "value": load_aws_region_name()},
                             {"name": "TIMEOUT", "value": str(timeout_minutes * 60)},
                             {"name": "BASTION_TYPE", "value": bastion_type.value},
                         ],
-                    }
-                ]
+                    },
+                ],
             },
             count=1,
             launchType="FARGATE",
@@ -209,9 +214,16 @@ def launch_fargate_task(
                     "subnets": subnet_ids.split(","),
                     "securityGroups": security_group_ids.split(","),
                     "assignPublicIp": "ENABLED",
-                }
+                },
             },
-            tags=build_tags("ecs", {"Name": f"{DEFAULT_NAME}/{instance_name}"}),
+            tags=build_tags(
+                "ecs",
+                {
+                    "Name": f"{DEFAULT_NAME}/{instance_name}",
+                    "BastionId": bastion_id,
+                    "ActivationId": activation.get("ActivationId", ""),
+                },
+            ),
         )
 
     except client.exceptions.ClusterNotFoundException:
@@ -229,14 +241,25 @@ def launch_fargate_task(
     return response
 
 
+def stop_fargate_tasks(cluster: str, tasks: List[TaskTypeDef]) -> None:
+    client: ECSClient = fetch_boto3_client("ecs")
+
+    log_info(f"Stopping {len(tasks)} tasks...")
+    for t in tasks:
+        client.stop_task(cluster=cluster, task=t["taskArn"])
+
+
 def describe_task(
     cluster_name: str,
     task_arns: List[str],
-) -> DescribeTasksResponseTypeDef:
+) -> Optional[DescribeTasksResponseTypeDef]:
     """
     Fetches the statuses for a group of tasks
     """
     client: ECSClient = fetch_boto3_client("ecs")
+
+    if len(task_arns) == 0:
+        return None
 
     return client.describe_tasks(
         cluster=cluster_name,
@@ -263,11 +286,11 @@ def wait_for_tasks_to_start(
     while not tasks_started and wait_time < timeout_seconds:
         task_info = describe_task(cluster_name, task_arns)
 
-        if len(task_info["failures"]) > 0:
+        if not task_info or len(task_info["failures"]) > 0:
             break
 
         tasks_started = all(
-            [t["lastStatus"] == t["desiredStatus"] for t in task_info["tasks"]]
+            [t["lastStatus"] == t["desiredStatus"] for t in task_info["tasks"]],
         )
 
         sleep(2)
@@ -278,27 +301,56 @@ def wait_for_tasks_to_start(
         raise Abort()
 
 
-def load_task_public_ips(cluster_name: str, instance_name: str) -> List[str]:
+def load_running_task_info(
+    cluster_name: str,
+    instance_name: Optional[str] = None,
+    bastion_id: Optional[str] = None,
+) -> List[TaskTypeDef]:
     """
-    Loads all of the public ip addresses for tasks that were
-    created by this cli. If the instance name is passed in, then
-    instances are also filtered by name.
+    Loads and returns all running bastion tasks in the given cluster with the
+    selected instance name
     """
     client: ECSClient = fetch_boto3_client("ecs")
 
     task_list = client.list_tasks(cluster=cluster_name, family=DEFAULT_NAME)
     task_response = describe_task(cluster_name, task_list["taskArns"])
 
-    attachments = [
-        a
-        for t in task_response["tasks"]
-        for a in t["attachments"]
-        if f"{DEFAULT_NAME}/{instance_name}" in get_tag_values(t["tags"], "Name")
-    ]
+    if not task_response:
+        return []
+
+    response = task_response["tasks"]
+
+    if instance_name:
+        response = [
+            t
+            for t in response
+            if f"{DEFAULT_NAME}/{instance_name}"
+            == get_tag_value("ecs", t["tags"], "Name")
+        ]
+
+    if bastion_id:
+        response = [
+            t
+            for t in response
+            if bastion_id == get_tag_value("ecs", t["tags"], "BastionId")
+        ]
+
+    return response
+
+
+def load_task_public_ips(cluster_name: str, instance_name: str) -> List[str]:
+    """
+    Loads all of the public ip addresses for tasks that were
+    created by this cli. If the instance name is passed in, then
+    instances are also filtered by name.
+    """
+    tasks = load_running_task_info(cluster_name, instance_name)
+
+    attachments = [a for t in tasks for a in t["attachments"]]
     network_interface_ids = [
         detail["value"]
         for a in attachments
         for detail in a["details"]
         if detail["name"] == "networkInterfaceId"
     ]
-    return load_public_ips_for_network_interfaces(network_interface_ids)
+    return list(load_public_ips_for_network_interfaces(network_interface_ids).values())
