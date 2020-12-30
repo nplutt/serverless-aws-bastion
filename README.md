@@ -9,12 +9,11 @@ python setup.py develop
 ## Feature To Do
 - [x] CLI to manage booting up Fargate task
 - [x] CLI for creating bastion stack (cluster, task, iam)
-- [ ] CLI to destroy bastion stack (cluster, task, iam)
+- [x] CLI to destroy bastion stack (cluster, task, iam)
 - [x] SSH functionality via SSM
 - [x] Task timeout functionality
-- [ ] CLI for machine cleanup on SSM side
-- [ ] CLI to create security group to launch task into
-- [ ] Scripts to allow SSM SSH into Fargate task
+- [x] CLI for machine cleanup on SSM side
+- [x] Scripts to allow SSM SSH into Fargate task
 - [ ] Personal vs group bastion functionality
 - [ ] Docs for cli
 - [ ] Docs for Docker container
