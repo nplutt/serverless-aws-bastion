@@ -3,7 +3,7 @@ from setuptools import find_packages, setup
 
 setup(
     name="serverless-aws-bastion",
-    version="0.0.1",
+    version="0.1.0",
     description="Create and manage your serverless bastion",
     author="Nick Plutt",
     author_email="nplutt@gmail.com",
@@ -29,14 +29,22 @@ setup(
         ],
     },
     install_requires=[
-        "attrs",
-        "boto3",
-        "boto3-stubs[ec2,ecs,iam,ssm,sts]",
-        "click",
-        "colorama",
+        "attrs==20.3.0",
+        "boto3==1.16.28",
+        "boto3-stubs[ec2,ecs,iam,ssm,sts]==1.16.28.0",
+        "click==8.0.0a1",
+        "colorama==0.4.4",
     ],
     extras_require={
-        "test": ["pytest", "pytest-cov"],
-        "dev": ["add-trailing-comma", "mypy", "black", "isort"],
+        "test": [
+            "pytest==6.1.2",
+            "pytest-cov==2.10.1",
+        ],
+        "dev": [
+            "add-trailing-comma==2.0.1",
+            "mypy==0.790",
+            "black==20.8b1",
+            "isort==5.6.4",
+        ],
     },
 )
