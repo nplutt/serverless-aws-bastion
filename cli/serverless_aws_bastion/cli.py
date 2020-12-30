@@ -26,7 +26,7 @@ from serverless_aws_bastion.config import TASK_TIMEOUT
 from serverless_aws_bastion.dto.instance_info import build_instance_info
 from serverless_aws_bastion.enum.bastion_type import BastionType
 from serverless_aws_bastion.enum.log_level import LogLevel
-from serverless_aws_bastion.utils.click_utils import log_output, log_info
+from serverless_aws_bastion.utils.click_utils import log_info, log_output
 
 
 def common_params(func):
@@ -207,7 +207,7 @@ def handle_launch_bastion(
         bastion_type=bastion_type_enum,
     )
 
-    task_instance_info = launched_task_info['tasks']
+    task_instance_info = launched_task_info["tasks"]
     task_instance_ips = load_public_ips_from_task_data(task_instance_info)
     ssm_instance_info = load_instance_ids(bastion_name)
 

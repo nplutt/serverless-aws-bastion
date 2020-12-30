@@ -41,7 +41,7 @@ def build_instance_info(
                 created_at=created_at,
                 instance_name=instance_name,
                 public_ip=task_ips[bastion_id],
-                ssm_instance_id=ssm_instance_data.get(activation_id, ''),
+                ssm_instance_id=ssm_instance_data.get(activation_id, ""),
             ),
         )
 

@@ -9,6 +9,9 @@ def _get_log_level() -> LogLevel:
     """
     log_level = get_current_context().params.get("log_level")
 
+    if not log_level:
+        return LogLevel.info
+
     try:
         return LogLevel[log_level.lower()]
     except KeyError:
