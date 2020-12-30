@@ -12,7 +12,6 @@ from serverless_aws_bastion.aws.ecs import (
     delete_task_definition,
     launch_fargate_task,
     load_running_task_info,
-    load_task_public_ips,
     stop_fargate_tasks,
 )
 from serverless_aws_bastion.aws.iam import (
@@ -26,7 +25,8 @@ from serverless_aws_bastion.aws.ssm import load_instance_ids
 from serverless_aws_bastion.config import TASK_TIMEOUT
 from serverless_aws_bastion.dto.instance_info import build_instance_info
 from serverless_aws_bastion.enum.bastion_type import BastionType
-from serverless_aws_bastion.utils.click_utils import log_info
+from serverless_aws_bastion.enum.log_level import LogLevel
+from serverless_aws_bastion.utils.click_utils import log_info, log_output
 
 
 def common_params(func):
@@ -35,6 +35,12 @@ def common_params(func):
         help="The aws region to run this command in",
         type=click.STRING,
         default=None,
+    )
+    @click.option(
+        "--log-level",
+        help="Output log level, the options are `info` or `error`. Default is `info`.",
+        type=click.STRING,
+        default=LogLevel.info.name,
     )
     @wraps(func)
     def wrapper(*args, **kwargs):
@@ -61,7 +67,7 @@ def cli():
 @common_params
 def handle_create_fargate_cluster(cluster_name: str, **kwargs):
     create_fargate_cluster(cluster_name)
-    log_info("Fargate cluster running")
+    log_output("Fargate cluster running")
 
 
 @cli.command(
@@ -77,7 +83,7 @@ def handle_create_fargate_cluster(cluster_name: str, **kwargs):
 @common_params
 def handle_delete_fargate_cluster(cluster_name: str, **kwargs):
     delete_fargate_cluster(cluster_name)
-    log_info("Fargate cluster deleted")
+    log_output("Fargate cluster deleted")
 
 
 @cli.command(
@@ -109,7 +115,7 @@ def handle_create_bastion_task(
         execution_role_arn = create_bastion_task_execution_role()
 
     create_task_definition(task_role_arn, execution_role_arn)
-    log_info("Bastion ECS task created")
+    log_output("Bastion ECS task created")
 
 
 @cli.command(
@@ -124,7 +130,7 @@ def handle_delete_bastion_task(**kwargs):
     delete_bastion_task_execution_role()
     delete_deregister_ssm_policy()
 
-    log_info("Bastion ECS task deleted")
+    log_output("Bastion ECS task deleted")
 
 
 @cli.command(
@@ -191,7 +197,7 @@ def handle_launch_bastion(
     except KeyError:
         raise click.ClickException("bastion-type must be one of `original` or `ssm`")
 
-    launch_fargate_task(
+    launched_task_info = launch_fargate_task(
         cluster_name=cluster_name,
         subnet_ids=subnet_ids,
         security_group_ids=security_group_ids,
@@ -200,14 +206,17 @@ def handle_launch_bastion(
         timeout_minutes=bastion_timeout,
         bastion_type=bastion_type_enum,
     )
-    log_info("Bastion task is running")
 
-    public_ips = load_task_public_ips(cluster_name, bastion_name)
-    log_info(f"Instance public ip(s): {', '.join(public_ips)}")
+    task_instance_info = launched_task_info["tasks"]
+    task_instance_ips = load_public_ips_from_task_data(task_instance_info)
+    ssm_instance_info = load_instance_ids(bastion_name)
 
-    if bastion_type == BastionType.ssm:
-        instances = load_instance_ids(bastion_name)
-        log_info(f"Instance ssm id(s): {', '.join(instances)}")
+    instance_info = build_instance_info(
+        task_instance_info,
+        task_instance_ips,
+        ssm_instance_info,
+    )
+    log_output(json.dumps([i.as_dict for i in instance_info], indent=4))
 
 
 @cli.command(
@@ -241,7 +250,7 @@ def handle_stop_bastion_instances(
 ) -> None:
     task_info = load_running_task_info(cluster_name, bastion_name, bastion_id)
     stop_fargate_tasks(cluster_name, task_info)
-    log_info(f"Stopped {len(task_info)} tasks")
+    log_output(f"Stopped {len(task_info)} tasks")
 
 
 @cli.command(
@@ -273,7 +282,7 @@ def handle_list_bastion_instances(
         task_instance_ips,
         ssm_instance_info,
     )
-    log_info(json.dumps([i.as_dict for i in instance_info], indent=4))
+    log_output(json.dumps([i.as_dict for i in instance_info], indent=4))
 
 
 def main() -> None:
